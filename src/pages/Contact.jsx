@@ -1,6 +1,14 @@
+import { Helmet } from 'react-helmet-async'
+
 export default function Contact() {
   return (
     <>
+      <Helmet>
+        <title>Contact | Prestigious Home Services, LLC.</title>
+        <meta name="description" content="Get a free estimate from Prestigious Home Services. Call or text Kruno Tomic at (386) 287-8579. Licensed and insured contractor serving customers nationwide." />
+        <link rel="canonical" href="https://prestigioushomeservices.com/contact" />
+      </Helmet>
+
       {/* Page header */}
       <section className="bg-zinc-900 text-white py-16">
         <div className="max-w-6xl mx-auto px-4">
@@ -39,7 +47,7 @@ export default function Contact() {
                   <span className="text-2xl">📍</span>
                   <div>
                     <p className="font-semibold text-zinc-800">Service Area</p>
-                    <p>Serving North Florida</p>
+                    <p>Serving Nationwide</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">

@@ -3,7 +3,7 @@ import { Link, NavLink } from 'react-router-dom'
 
 const links = [
   { to: '/', label: 'Home' },
-  { to: '/services', label: 'Services' },
+  { to: '/gallery', label: 'Gallery' },
   { to: '/contact', label: 'Contact' },
 ]
 
@@ -13,9 +13,8 @@ export default function Navbar() {
   return (
     <header className="bg-zinc-900 text-white sticky top-0 z-50 shadow-lg">
       <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
-        <Link to="/" className="flex flex-col leading-tight">
-          <span className="font-bold text-red-500 text-sm tracking-widest uppercase">Prestigious</span>
-          <span className="text-white font-semibold text-base tracking-wide">Home Services, LLC.</span>
+        <Link to="/" className="flex items-center">
+          <img src="/logo.png" alt="Prestigious Home Services" className="w-[5vw] h-[5vh] object-contain" />
         </Link>
 
         {/* Desktop nav */}
