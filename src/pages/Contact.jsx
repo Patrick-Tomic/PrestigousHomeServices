@@ -1,13 +1,9 @@
-import { Helmet } from 'react-helmet-async'
+import Seo from '../components/Seo'
 
 export default function Contact() {
   return (
     <>
-      <Helmet>
-        <title>Contact | Prestigious Home Services, LLC.</title>
-        <meta name="description" content="Get a free estimate from Prestigious Home Services. Call or text Kruno Tomic at (386) 287-8579. Licensed and insured contractor serving customers nationwide." />
-        <link rel="canonical" href="https://prestigioushomeservices.com/contact" />
-      </Helmet>
+      <Seo path="/contact" />
 
       {/* Page header */}
       <section className="bg-stone-900 text-white py-16">

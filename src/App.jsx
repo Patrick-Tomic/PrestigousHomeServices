@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import Work from './pages/Work'
 import Contact from './pages/Contact'
 import Design from './pages/Design'
+import Project from './pages/Project'
 import Admin from './pages/Admin'
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
             <Route path="/work" element={<Work />} />
             <Route path="/gallery" element={<Navigate to="/work" replace />} />
             <Route path="/design" element={<Design />} />
+            <Route path="/project" element={<Project />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/admin" element={<Admin />} />
           </Routes>

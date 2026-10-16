@@ -30,7 +30,7 @@ function GalleryItem({ photo, index, onClick }) {
     >
       <img
         src={photo.src}
-        alt={photo.label}
+        alt={`${photo.label} by Prestigious Home Services`}
         loading="lazy"
         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
@@ -91,7 +91,7 @@ function Lightbox({ photos, index, onClose, onPrev, onNext }) {
       >
         <img
           src={photo.src}
-          alt={photo.label}
+          alt={`${photo.label} by Prestigious Home Services`}
           className="w-full max-h-[80vh] object-contain"
         />
         <div className="mt-3 flex items-center gap-3">

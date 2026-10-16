@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, NavLink } from 'react-router-dom'
+import { useProject } from './designer/projectStore'
+import { CartIcon } from './designer/icons'
 
 const links = [
   { to: '/', label: 'Home' },
@@ -16,7 +18,27 @@ function PhoneIcon({ className = '' }) {
   )
 }
 
+// My Project link with a count badge.
+function ProjectLink({ count, onClick, className = '' }) {
+  return (
+    <NavLink
+      to="/project"
+      onClick={onClick}
+      aria-label={`My project, ${count} room${count === 1 ? '' : 's'}`}
+      className={({ isActive }) => `relative p-2.5 rounded-md transition-colors ${isActive ? 'text-white bg-white/10' : 'text-stone-300 hover:text-white hover:bg-white/5'} ${className}`}
+    >
+      <CartIcon className="w-5 h-5" />
+      {count > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold leading-[18px] text-center tabular-nums ring-2 ring-stone-900">
+          {count}
+        </span>
+      )}
+    </NavLink>
+  )
+}
+
 export default function Navbar() {
+  const projectCount = useProject().length
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -68,7 +90,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-8" aria-label="Main">
+        <nav className="hidden lg:flex items-center gap-8" aria-label="Main">
           {links.map(({ to, label }) => (
             <NavLink
               key={to}
@@ -85,6 +107,7 @@ export default function Navbar() {
               {label}
             </NavLink>
           ))}
+          <ProjectLink count={projectCount} className="-mx-3" />
           <a
             href="tel:+13862878579"
             className="group flex items-center gap-2.5 bg-red-600 hover:bg-red-500 text-white pl-3 pr-4 py-2 rounded-md shadow-md shadow-red-900/40 transition-all hover:-translate-y-px"
@@ -100,7 +123,8 @@ export default function Navbar() {
         </nav>
 
         {/* Mobile actions */}
-        <div className="md:hidden flex items-center gap-1">
+        <div className="lg:hidden flex items-center gap-1">
+          <ProjectLink count={projectCount} onClick={close} />
           <a
             href="tel:+13862878579"
             className="p-2.5 rounded-md text-red-500 hover:text-red-400 hover:bg-white/5"
@@ -127,7 +151,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       <div
         id="mobile-menu"
-        className={`md:hidden grid transition-[grid-template-rows] duration-300 ease-out ${
+        className={`lg:hidden grid transition-[grid-template-rows] duration-300 ease-out ${
           open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
         }`}
         inert={!open}

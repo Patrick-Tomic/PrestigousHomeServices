@@ -1,9 +1,12 @@
 import { Component, Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
-import { Helmet } from 'react-helmet-async'
+import Seo from '../components/Seo'
 import { Link, useSearchParams } from 'react-router-dom'
+import { addRoom, updateRoom, useProject } from '../components/designer/projectStore'
+import { CartIcon, RoomIcon } from '../components/designer/icons'
 import {
-  BACKSPLASH, CABINETS, FLOORS, PHONE, ROOM_TYPES, SHOWERS, TONES, VANITIES, WASTE,
-  area, bathroomLayout, defaultDesign, parseDesign, serializeDesign, summaryLines, summaryText,
+  BACKSPLASH, BATH_COUNTERS, CABINETS, COUNTERS, ENCLOSURES, FINISHES, FLOORS, GLASS, KITCHEN_LAYOUTS, PATIO_PANELS, PHONE, ROOM_TYPES,
+  SHOWERS, SHOWER_TILES, TONES, TRIM, UPPERS, VANITIES, WASTE, YES_NO,
+  FLOOR_SWATCH, area, bathroomLayout, cabinetCounts, defaultDesign, fitToRoom, parseDesign, serializeDesign, summaryLines, summaryText,
 } from '../components/designer/designOptions'
 
 // three.js lives in its own chunk, fetched once the page has painted.
@@ -24,34 +27,6 @@ class SceneBoundary extends Component {
   state = { failed: false }
   static getDerivedStateFromError() { return { failed: true } }
   render() { return this.state.failed ? this.props.fallback : this.props.children }
-}
-
-// ---------------------------------------------------------------------------
-// Icons
-// ---------------------------------------------------------------------------
-
-const roomIcons = {
-  living: <><path d="M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3" /><path d="M2 13a2 2 0 0 1 4 0v2h12v-2a2 2 0 0 1 4 0v4H2z" /><path d="M5 17v2M19 17v2" /></>,
-  bedroom: <><path d="M3 18V7" /><path d="M3 14h18v4" /><path d="M21 14v-2a3 3 0 0 0-3-3h-7v5" /><circle cx="7" cy="11" r="1.6" /></>,
-  kitchen: <><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 10h18M12 10v11M9.5 14.5v2M14.5 14.5v2M7 6.5h2.5M14.5 6.5H17" /></>,
-  bathroom: <><path d="M4 12h16v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-3z" /><path d="M6 12V5.5a2.5 2.5 0 0 1 4.6-1.4" /><path d="M9.5 6.5l2.5-1.5M7 19l-1 2M17 19l1 2" /></>,
-  patio: <><path d="M2 20h20" /><path d="M4 20V9.5L12 4l8 5.5V20" /><path d="M4 12.5h16M8 12.5V20M12 12.5V20M16 12.5V20" /></>,
-}
-
-function Icon({ children, className = 'w-5 h-5' }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
-      {children}
-    </svg>
-  )
-}
-
-// Little CSS previews of each floor material for the swatch buttons.
-const floorSwatch = {
-  hardwood: 'repeating-linear-gradient(90deg, #b7895d 0 12px, #a67a50 12px 13px, #c39568 13px 25px, #9c6f47 25px 26px), linear-gradient(#b7895d, #b7895d)',
-  laminate: 'repeating-linear-gradient(90deg, #d8c3a3 0 19px, #bfa680 19px 20px), linear-gradient(#d8c3a3, #d8c3a3)',
-  tile: 'linear-gradient(90deg, #cbc3b7 2px, transparent 2px) 0 0 / 24px 24px, linear-gradient(#cbc3b7 2px, transparent 2px) 0 0 / 24px 24px, #f0ece6',
-  stone: 'linear-gradient(90deg, #c7b49a 2px, transparent 2px) 0 0 / 28px 14px, linear-gradient(90deg, #c7b49a 2px, transparent 2px) 14px 14px / 28px 14px, linear-gradient(#c7b49a 2px, transparent 2px) 0 0 / 28px 14px, #e2d4be',
 }
 
 // ---------------------------------------------------------------------------
@@ -118,6 +93,63 @@ function Slider({ id, label, value, range, onChange }) {
   )
 }
 
+function Field({ label, children, last }) {
+  return (
+    <div className={last ? '' : 'mb-4'}>
+      <p className="text-sm font-semibold text-stone-700 mb-2">{label}</p>
+      {children}
+    </div>
+  )
+}
+
+function Note({ children }) {
+  return <p className="text-xs text-oak-600 -mt-1 mb-4">{children}</p>
+}
+
+function Stat({ value, label }) {
+  return (
+    <div className="rounded-xl bg-stone-50 px-3 py-2.5">
+      <p className="font-display text-2xl font-semibold text-stone-900 tabular-nums leading-none">{value}</p>
+      <p className="text-[11px] text-stone-500 mt-1 leading-snug">{label}</p>
+    </div>
+  )
+}
+
+// Wall-tile previews for backsplash and shower tile buttons.
+const tileSwatch = {
+  subway: 'linear-gradient(#cfc9c1 2px, transparent 2px) 0 0 / 100% 10px, linear-gradient(90deg, #cfc9c1 2px, transparent 2px) 0 0 / 20px 20px, linear-gradient(90deg, #cfc9c1 2px, transparent 2px) 10px 10px / 20px 20px, #f7f6f3',
+  stacked: 'linear-gradient(90deg, #cbc5bd 2px, transparent 2px) 0 0 / 7px 100%, linear-gradient(#cbc5bd 2px, transparent 2px) 0 0 / 100% 24px, #f1efea',
+  marble: 'linear-gradient(135deg, transparent 0 40%, #cfc8be 41%, transparent 44%), linear-gradient(90deg, #d6d0c8 2px, transparent 2px) 0 0 / 50% 100%, #f6f4f1',
+  none: 'repeating-linear-gradient(135deg, #f4f2ee 0 6px, #ebe7e1 6px 7px)',
+}
+
+// Buttons with a colour or texture swatch: finishes, counters, tile styles.
+function SwatchChoice({ label, options, value, onChange, columns = 3, swatches }) {
+  return (
+    <div role="radiogroup" aria-label={label} className={`grid gap-2 ${columns === 4 ? 'grid-cols-4' : 'grid-cols-3'}`}>
+      {Object.entries(options).map(([key, o]) => {
+        const on = key === value
+        const bg = swatches?.[key] ?? o.swatch ?? o.color
+        return (
+          <button
+            key={key}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            onClick={() => onChange(key)}
+            className={`flex flex-col items-center gap-1.5 px-1.5 py-2.5 rounded-xl text-[11px] leading-tight font-semibold text-center transition-all cursor-pointer ring-1 ${
+              on ? 'ring-2 ring-red-600 bg-white shadow-md text-stone-900' : 'ring-stone-200 bg-stone-50 text-stone-600 hover:ring-stone-400'
+            }`}
+          >
+            <span className="w-9 h-9 rounded-full ring-1 ring-black/10" style={{ background: bg }} aria-hidden="true" />
+            {o.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
@@ -126,13 +158,45 @@ export default function Design() {
   const [params, setParams] = useSearchParams()
   const [design, setDesign] = useState(() => parseDesign(params))
   const update = (patch) => setDesign(d => ({ ...d, ...patch }))
-  const chooseType = (type) => setDesign(d => ({ ...defaultDesign(type), tone: d.tone, cabinets: d.cabinets, backsplash: d.backsplash, shower: d.shower, vanity: d.vanity }))
+  // A new room type resets size and floor to suit it; other choices carry over.
+  const chooseType = (type) => setDesign(d => {
+    const t = defaultDesign(type)
+    return fitToRoom({ ...d, type, width: t.width, length: t.length, floor: t.floor })
+  })
+
+  // Editing a room from My Project (?edit=<id>), or designing a new one.
+  const rooms = useProject()
+  const [editId, setEditId] = useState(() => params.get('edit'))
+  const editing = rooms.find(r => r.id === editId) || null
+  // Confirmation after a save; it belongs to that exact design, so any
+  // further change hides it.
+  const [savedFor, setSavedFor] = useState(null)
+  const saved = savedFor && savedFor.design === design ? savedFor : null
 
   // Keep the URL in step (debounced so slider drags don't spam history).
   useEffect(() => {
-    const t = setTimeout(() => setParams(serializeDesign(design), { replace: true }), 300)
+    const t = setTimeout(() => {
+      const p = serializeDesign(design)
+      if (editId) p.set('edit', editId)
+      setParams(p, { replace: true })
+    }, 300)
     return () => clearTimeout(t)
-  }, [design, setParams])
+  }, [design, editId, setParams])
+
+  const saveNew = () => {
+    const room = addRoom(design)
+    setEditId(room.id)
+    setSavedFor({ name: room.name, updated: false, design })
+  }
+  const saveEdit = () => {
+    updateRoom(editing.id, { design })
+    setSavedFor({ name: editing.name, updated: true, design })
+  }
+  const startNew = () => {
+    setEditId(null)
+    setDesign(defaultDesign(design.type))
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const [env] = useState(() => ({
     webgl: supportsWebGL(),
@@ -154,7 +218,8 @@ export default function Design() {
   const type = ROOM_TYPES[design.type]
   const sqft = area(design)
   const needed = Math.ceil(sqft * (1 + WASTE))
-  const bath = design.type === 'bathroom' ? bathroomLayout(design) : null
+  const bath = bathroomLayout(design)
+  const kitchen = cabinetCounts(design)
   const shareUrl = `${window.location.origin}/design?${serializeDesign(design)}`
   const text = useMemo(() => summaryText(design, shareUrl), [design, shareUrl])
 
@@ -174,11 +239,7 @@ export default function Design() {
 
   return (
     <>
-      <Helmet>
-        <title>Design Your Room | Prestigious Home Services, LLC.</title>
-        <meta name="description" content="Plan your project in 3D: choose a room type, set the size, and preview hardwood, laminate, tile or natural stone flooring. Then send your design to Prestigious Home Services for a free estimate." />
-        <link rel="canonical" href="https://prestigioushomeservices.com/design" />
-      </Helmet>
+      <Seo path="/design" />
 
       {/* Header */}
       <section className="bg-ink text-white relative overflow-hidden">
@@ -249,7 +310,7 @@ export default function Design() {
                         on ? 'bg-ink text-white ring-ink shadow-md' : 'bg-stone-50 text-stone-700 ring-stone-200 hover:ring-stone-400'
                       }`}
                     >
-                      <span className={on ? 'text-oak-300' : 'text-oak-500'}><Icon>{roomIcons[key]}</Icon></span>
+                      <span className={on ? 'text-oak-300' : 'text-oak-500'}><RoomIcon type={key} /></span>
                       {r.label}
                     </button>
                   )
@@ -283,7 +344,7 @@ export default function Design() {
                         on ? 'ring-2 ring-red-600 bg-white shadow-md' : 'ring-stone-200 bg-stone-50 hover:ring-stone-400'
                       }`}
                     >
-                      <span className="block h-12 rounded-lg mb-2 ring-1 ring-black/5" style={{ background: floorSwatch[key] }} aria-hidden="true" />
+                      <span className="block h-12 rounded-lg mb-2 ring-1 ring-black/5" style={{ background: FLOOR_SWATCH[key] }} aria-hidden="true" />
                       <span className="block px-1 text-sm font-semibold text-stone-900">{f.label}</span>
                       <span className="block px-1 text-[11px] leading-snug text-stone-500">{f.note}</span>
                     </button>
@@ -295,50 +356,116 @@ export default function Design() {
             </Section>
 
             {design.type === 'kitchen' && (
-              <Section num="04" title="Kitchen details">
-                <p className="text-sm font-semibold text-stone-700 mb-2">Cabinets</p>
-                <div role="radiogroup" aria-label="Cabinet finish" className="grid grid-cols-3 gap-2 mb-4">
-                  {Object.entries(CABINETS).map(([key, c]) => {
-                    const on = key === design.cabinets
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        role="radio"
-                        aria-checked={on}
-                        onClick={() => update({ cabinets: key })}
-                        className={`flex flex-col items-center gap-2 px-2 py-3 rounded-xl text-xs font-semibold transition-all cursor-pointer ring-1 ${
-                          on ? 'ring-2 ring-red-600 bg-white shadow-md text-stone-900' : 'ring-stone-200 bg-stone-50 text-stone-600 hover:ring-stone-400'
-                        }`}
-                      >
-                        <span className="w-8 h-8 rounded-full ring-1 ring-black/10" style={{ background: c.color }} aria-hidden="true" />
-                        {c.label}
-                      </button>
-                    )
-                  })}
-                </div>
-                <p className="text-sm font-semibold text-stone-700 mb-2">Backsplash</p>
-                <Choice label="Backsplash" options={BACKSPLASH} value={design.backsplash} onChange={(backsplash) => update({ backsplash })} />
-              </Section>
+              <>
+                <Section num="04" title="Layout & cabinets">
+                  <Field label="Layout">
+                    <Choice label="Kitchen layout" options={KITCHEN_LAYOUTS} value={design.layout} onChange={(layout) => update({ layout })} columns={3} />
+                  </Field>
+                  <Field label="Upper storage">
+                    <Choice label="Upper storage" options={UPPERS} value={design.uppers} onChange={(uppers) => update({ uppers })} columns={3} />
+                  </Field>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field label="Island">
+                      <Choice label="Island" options={YES_NO} value={design.island} onChange={(island) => update({ island })} />
+                    </Field>
+                    <Field label="Pantry cabinet">
+                      <Choice label="Pantry cabinet" options={YES_NO} value={design.pantry} onChange={(pantry) => update({ pantry })} />
+                    </Field>
+                  </div>
+                  {design.island === 'yes' && !kitchen.islandFits && (
+                    <Note>{design.layout === 'u' ? 'A U-shaped layout uses a peninsula instead of an island.' : 'An island needs a larger room. Try increasing the size.'}</Note>
+                  )}
+                  <Field label="Cabinet finish">
+                    <SwatchChoice label="Cabinet finish" options={CABINETS} value={design.cabinets} onChange={(cabinets) => update({ cabinets })} />
+                  </Field>
+                  <Field label="Hardware" last>
+                    <SwatchChoice label="Cabinet hardware" options={FINISHES} value={design.hardware} onChange={(hardware) => update({ hardware })} />
+                  </Field>
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    <Stat value={kitchen.base} label={`Base cabinets · ${kitchen.baseFt} linear ft`} />
+                    <Stat value={design.uppers === 'cabinets' ? kitchen.uppers : '—'} label={design.uppers === 'cabinets' ? `Upper cabinets · ${kitchen.uppersFt} linear ft` : UPPERS[design.uppers].label} />
+                  </div>
+                </Section>
+                <Section num="05" title="Countertop & backsplash">
+                  <Field label="Countertop">
+                    <SwatchChoice label="Countertop" options={COUNTERS} value={design.counter} onChange={(counter) => update({ counter })} columns={4} />
+                  </Field>
+                  <Field label="Backsplash" last>
+                    <SwatchChoice label="Backsplash" options={BACKSPLASH} value={design.backsplash} onChange={(backsplash) => update({ backsplash })} columns={4} swatches={tileSwatch} />
+                  </Field>
+                </Section>
+              </>
             )}
 
             {design.type === 'bathroom' && (
-              <Section num="04" title="Bathroom details">
-                <p className="text-sm font-semibold text-stone-700 mb-2">Shower</p>
-                <div className="mb-4">
-                  <Choice label="Shower" options={SHOWERS} value={design.shower} onChange={(shower) => update({ shower })} />
-                </div>
-                <p className="text-sm font-semibold text-stone-700 mb-2">Vanity</p>
-                <Choice label="Vanity" options={VANITIES} value={design.vanity} onChange={(vanity) => update({ vanity })} />
-                {design.vanity === 'double' && !bath.doubleFits && (
-                  <p className="text-xs text-oak-600 mt-3">A double vanity needs a longer room. Try increasing the length, or ask us about other layouts.</p>
-                )}
+              <>
+                <Section num="04" title="Shower design">
+                  <Field label="Type">
+                    <Choice label="Shower type" options={SHOWERS} value={design.shower} onChange={(shower) => update({ shower })} />
+                  </Field>
+                  <Field label="Shower tile">
+                    <SwatchChoice label="Shower tile" options={SHOWER_TILES} value={design.showerTile} onChange={(showerTile) => update({ showerTile })} swatches={tileSwatch} />
+                  </Field>
+                  <Field label={design.shower === 'tub' ? 'Glass or curtain' : 'Glass'}>
+                    <Choice label="Shower glass" options={GLASS} value={design.glass} onChange={(glass) => update({ glass })} columns={3} />
+                  </Field>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field label="Built-in niche">
+                      <Choice label="Built-in niche" options={YES_NO} value={design.niche} onChange={(niche) => update({ niche })} />
+                    </Field>
+                    {design.shower === 'walkin' && (
+                      <Field label="Tiled bench">
+                        <Choice label="Tiled bench" options={YES_NO} value={design.bench} onChange={(bench) => update({ bench })} />
+                      </Field>
+                    )}
+                  </div>
+                  <Field label="Fixture finish" last>
+                    <SwatchChoice label="Fixture finish" options={FINISHES} value={design.fixtures} onChange={(fixtures) => update({ fixtures })} />
+                  </Field>
+                </Section>
+                <Section num="05" title="Vanity">
+                  <Field label="Size">
+                    <Choice label="Vanity size" options={VANITIES} value={design.vanity} onChange={(vanity) => update({ vanity })} />
+                  </Field>
+                  {!bath.vanityFits && (
+                    <Note>This room is too small for a vanity alongside the shower and toilet. Try increasing the length.</Note>
+                  )}
+                  {bath.vanityFits && design.vanity === 'double' && !bath.doubleFits && (
+                    <Note>A double vanity needs a longer room. Try increasing the length, or ask us about other layouts.</Note>
+                  )}
+                  <Field label="Cabinet finish">
+                    <SwatchChoice label="Vanity finish" options={CABINETS} value={design.vanityFinish} onChange={(vanityFinish) => update({ vanityFinish })} />
+                  </Field>
+                  <Field label="Countertop" last>
+                    <SwatchChoice label="Vanity countertop" options={BATH_COUNTERS} value={design.counter} onChange={(counter) => update({ counter })} />
+                  </Field>
+                </Section>
+              </>
+            )}
+
+            {design.type === 'patio' && (
+              <Section num="04" title="Enclosure">
+                <Field label="Style">
+                  <Choice label="Enclosure style" options={ENCLOSURES} value={design.enclosure} onChange={(enclosure) => update({ enclosure })} />
+                </Field>
+                <Field label="Panels" last>
+                  <Choice label="Enclosure panels" options={PATIO_PANELS} value={design.panels} onChange={(panels) => update({ panels })} />
+                </Field>
+              </Section>
+            )}
+
+            {design.type !== 'patio' && (
+              <Section num={design.type === 'kitchen' || design.type === 'bathroom' ? '06' : '04'} title="Finish & trim">
+                <Choice label="Trim" options={TRIM} value={design.trim} onChange={(trim) => update({ trim })} />
               </Section>
             )}
 
             {/* Summary */}
             <section className="rounded-2xl bg-ink text-white p-5 md:p-6 shadow-xl shadow-stone-900/20">
-              <h2 className="font-display text-xl font-semibold mb-4">Your project</h2>
+              <div className="flex items-baseline justify-between gap-3 mb-4">
+                <h2 className="font-display text-xl font-semibold">{editing ? editing.name : 'This room'}</h2>
+                {editing && <span className="text-[11px] font-semibold tracking-wider uppercase text-oak-300">In your project</span>}
+              </div>
               <dl className="divide-y divide-white/10 text-sm">
                 {summaryLines(design).map(([k, v]) => (
                   <div key={k} className="flex justify-between gap-4 py-2">
@@ -355,32 +482,60 @@ export default function Design() {
                 Includes about {Math.round(WASTE * 100)}% extra for cuts and waste. Exact quantities are confirmed when we measure.
               </p>
 
+              {/* Project actions */}
               <div className="flex flex-col gap-2.5">
-                <Link
-                  to="/contact"
-                  className="inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3.5 rounded-full tracking-wide transition-colors"
-                >
+                {editing ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <button type="button" onClick={saveEdit} className={primaryBtn}>Update room</button>
+                    <button type="button" onClick={saveNew} className={secondaryBtn}>Save as new</button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={saveNew} className={primaryBtn}>
+                    <CartIcon className="w-4 h-4" /> Add to my project
+                  </button>
+                )}
+                <div aria-live="polite">
+                  {saved && (
+                    <div className="rounded-xl bg-white/5 ring-1 ring-white/10 px-4 py-3 text-sm animate-[fadeIn_300ms_ease-out_both]">
+                      <p className="font-semibold text-white">
+                        {saved.updated ? `${saved.name} updated.` : `${saved.name} added to your project.`}
+                      </p>
+                      <div className="flex flex-wrap gap-x-5 gap-y-1 mt-1.5">
+                        <Link to="/project" className="text-oak-300 hover:text-oak-200 font-semibold">
+                          View project ({rooms.length} room{rooms.length === 1 ? '' : 's'}) →
+                        </Link>
+                        <button type="button" onClick={startNew} className="text-stone-300 hover:text-white font-semibold cursor-pointer">
+                          Design another room
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {!saved && rooms.length > 0 && (
+                  <Link to="/project" className="text-center text-sm text-stone-300 hover:text-white font-semibold py-1">
+                    My project · {rooms.length} room{rooms.length === 1 ? '' : 's'} →
+                  </Link>
+                )}
+              </div>
+
+              <div className="border-t border-white/10 mt-5 pt-5 flex flex-col gap-2.5">
+                <p className="text-xs text-stone-400">Just this room?</p>
+                <Link to="/contact" className={secondaryBtn}>
                   Get a Free Estimate <span aria-hidden="true">→</span>
                 </Link>
                 {env.touch ? (
-                  <a
-                    href={`sms:${PHONE}?&body=${encodeURIComponent(text)}`}
-                    className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 ring-1 ring-inset ring-white/25 text-white font-bold px-6 py-3.5 rounded-full tracking-wide transition-colors"
-                  >
+                  <a href={`sms:${PHONE}?&body=${encodeURIComponent(text)}`} className={secondaryBtn}>
                     Text this design to us
                   </a>
                 ) : (
-                  <a
-                    href={`tel:${PHONE}`}
-                    className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 ring-1 ring-inset ring-white/25 text-white font-bold px-6 py-3.5 rounded-full tracking-wide transition-colors"
-                  >
+                  <a href={`tel:${PHONE}`} className={secondaryBtn}>
                     Call (386) 287-8579
                   </a>
                 )}
                 <button
                   type="button"
                   onClick={copy}
-                  className="inline-flex items-center justify-center gap-2 text-stone-300 hover:text-white font-semibold px-6 py-2.5 text-sm transition-colors cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 text-stone-300 hover:text-white font-semibold px-6 py-2 text-sm transition-colors cursor-pointer"
                 >
                   {copied ? 'Copied — paste it in a text or email' : 'Copy design details'}
                 </button>
@@ -392,6 +547,9 @@ export default function Design() {
     </>
   )
 }
+
+const primaryBtn = 'inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-5 py-3.5 rounded-full tracking-wide transition-colors cursor-pointer'
+const secondaryBtn = 'inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 ring-1 ring-inset ring-white/25 text-white font-bold px-5 py-3 rounded-full tracking-wide transition-colors cursor-pointer'
 
 function PreviewLoading() {
   return (

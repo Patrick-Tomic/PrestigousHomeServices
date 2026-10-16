@@ -1,8 +1,21 @@
-# Serve real files (images, /api/*.php, /uploads/*) as-is and send every
-# other path to the React app so routes like /gallery and /admin work.
+# Serve real files (images, /api/*.php, /uploads/*) as-is, serve prerendered
+# pages (/work -> work.html, written by scripts/prerender.mjs), and send every
+# other path to the React app so routes like /admin work.
 RewriteEngine On
 RewriteBase /
+
+# /gallery moved to /work
+RewriteRule ^gallery/?$ /work [L,R=301]
+
+# Trailing slash -> no slash (canonical URLs have none)
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.+)/$ /$1 [L,R=301]
+
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
+
+RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+RewriteRule ^([a-z0-9-]+)$ $1.html [L]
+
 RewriteRule ^ index.html [L]

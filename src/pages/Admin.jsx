@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Helmet } from 'react-helmet-async'
+import Seo from '../components/Seo'
 import { CATEGORIES, callApi, fetchUploadedPhotos } from '../data/gallery'
 
 const SESSION_KEY = 'gallery-admin-password'
@@ -322,10 +322,7 @@ export default function Admin() {
 
   return (
     <>
-      <Helmet>
-        <title>Gallery Admin | Prestigious Home Services, LLC.</title>
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      <Seo path="/admin" />
 
       <section className="bg-stone-900 text-white py-12">
         <div className="max-w-4xl mx-auto px-4 flex items-end justify-between gap-4">

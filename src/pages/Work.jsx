@@ -1,9 +1,24 @@
 import { useState, useEffect, useRef } from 'react'
-import { Helmet } from 'react-helmet-async'
+import Seo from '../components/Seo'
 import { Link, useLocation } from 'react-router-dom'
 import { PhotoGrid } from '../components/ProjectGallery'
 import { useGalleryPhotos } from '../data/gallery'
 import { services } from '../data/services'
+import { SITE } from '../seo'
+
+// Each service, tied to the business entity declared in index.html.
+const servicesLd = {
+  '@context': 'https://schema.org',
+  '@graph': services.map(sv => ({
+    '@type': 'Service',
+    name: sv.title,
+    serviceType: sv.title,
+    description: sv.body,
+    url: `${SITE.url}/work#${sv.slug}`,
+    provider: { '@id': `${SITE.url}/#business` },
+    areaServed: { '@type': 'Country', name: 'United States' },
+  })),
+}
 
 function useReveal(threshold = 0.1) {
   const ref = useRef(null)
@@ -117,11 +132,7 @@ export default function Work() {
 
   return (
     <>
-      <Helmet>
-        <title>Our Work | Prestigious Home Services, LLC.</title>
-        <meta name="description" content="Flooring, bathroom remodels, kitchen updates, enclosed patios, roofing, and handyman services by Prestigious Home Services — with photos of completed projects. Licensed and insured since 2011. Free estimates." />
-        <link rel="canonical" href="https://prestigioushomeservices.com/work" />
-      </Helmet>
+      <Seo path="/work" jsonLd={servicesLd} />
 
       {/* Page header */}
       <section className="bg-stone-950 pt-24 pb-16 relative overflow-hidden">

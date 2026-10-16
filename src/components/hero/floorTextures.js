@@ -186,3 +186,69 @@ export function createFloorTexture(kind, lite) {
   if (kind === 'tile') return drawTile(384 * k, 3)
   return drawStone(384 * k, 13)
 }
+
+// Vertical stacked tile (2.5" × 12"), for showers and backsplashes.
+function drawStacked() {
+  const canvas = document.createElement('canvas')
+  canvas.width = 256
+  canvas.height = 256
+  const ctx = canvas.getContext('2d')
+  ctx.fillStyle = '#c9c3bb'
+  ctx.fillRect(0, 0, 256, 256)
+  const cols = 8, rows = 2, g = 3
+  const w = 256 / cols, h = 256 / rows
+  const { noise } = makeNoise(5)
+  for (let c = 0; c < cols; c++) {
+    for (let r = 0; r < rows; r++) {
+      const shade = 236 + Math.round((noise(c * 3.1, r * 7.7) - 0.5) * 18)
+      ctx.fillStyle = `rgb(${shade}, ${shade - 2}, ${shade - 5})`
+      ctx.fillRect(c * w + g / 2, r * h + g / 2, w - g, h - g)
+    }
+  }
+  return toTexture(canvas)
+}
+
+// Marble: large-format tiles (grout lines) or a seamless slab for counters.
+function drawMarble(grout) {
+  const size = 512
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = size
+  const ctx = canvas.getContext('2d')
+  const img = ctx.createImageData(size, size)
+  const { fbm } = makeNoise(17)
+  const base = hex('#f5f3ef'), vein = hex('#9d958b')
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const u = x / size, v = y / size
+      const n = fbm(u * 2.5, v * 2.5)
+      const a = Math.pow(1 - Math.abs(Math.sin((u * 1.6 - v * 2.4 + n * 3.2) * Math.PI)), 22)
+      const b = Math.pow(1 - Math.abs(Math.sin((u * 3.1 + v * 0.9 + n * 2.1) * Math.PI)), 40) * 0.5
+      const t = Math.min(1, a * 0.75 + b + (n - 0.5) * 0.06)
+      const i = (y * size + x) * 4
+      for (let c = 0; c < 3; c++) img.data[i + c] = base[c] + (vein[c] - base[c]) * t
+      img.data[i + 3] = 255
+    }
+  }
+  ctx.putImageData(img, 0, 0)
+  if (grout) {
+    // 12" × 24" tiles, vertical: texture spans 24" × 24"
+    ctx.fillStyle = '#cfc9c1'
+    ctx.fillRect(0, 0, 3, size)
+    ctx.fillRect(size / 2 - 1, 0, 3, size)
+    ctx.fillRect(0, 0, size, 3)
+  }
+  return toTexture(canvas)
+}
+
+// Wall and counter surfaces keyed the way the designer refers to them, with
+// the real-world size (metres) one copy of each texture covers.
+export const SURFACE_SIZE = { subway: 0.6, stacked: 0.6, marble: 0.61, marbleSlab: 1.4 }
+
+export function createSurfaceTextures() {
+  return {
+    subway: createSubwayTexture(),
+    stacked: drawStacked(),
+    marble: drawMarble(true),
+    marbleSlab: drawMarble(false),
+  }
+}

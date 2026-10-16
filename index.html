@@ -3,63 +3,96 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#14110f" />
 
-    <!-- Primary meta -->
-    <title>Prestigious Home Services, LLC. | Flooring & Home Improvement</title>
-    <meta name="description" content="Prestigious Home Services, LLC. — licensed and insured flooring and home improvement contractor founded by Kruno Tomic. Serving customers nationwide since 2011. Free estimates." />
-    <meta name="keywords" content="flooring contractor, home improvement, bathroom remodel, kitchen update, enclosed patio, roofing, handyman, hardwood floors, tile installation, laminate flooring" />
-    <link rel="canonical" href="https://prestigioushomeservices.com/" />
+    <!-- Per-page tags. scripts/prerender.mjs rewrites these for each route at
+         build time; data-rh lets react-helmet-async replace them in the app. -->
+    <title data-rh="true">Prestigious Home Services, LLC | Flooring &amp; Home Improvement Contractor</title>
+    <meta data-rh="true" name="description" content="Licensed and insured flooring and home improvement contractor founded by Kruno Tomic in 2011. Hardwood, tile, laminate, bathroom remodels, kitchen updates, enclosed patios, roofing and handyman work. Free estimates." />
+    <meta data-rh="true" name="robots" content="index, follow, max-image-preview:large" />
+    <link data-rh="true" rel="canonical" href="https://prestigioushomeservices.com/" />
+    <meta data-rh="true" property="og:type" content="website" />
+    <meta data-rh="true" property="og:site_name" content="Prestigious Home Services" />
+    <meta data-rh="true" property="og:title" content="Prestigious Home Services, LLC | Flooring &amp; Home Improvement Contractor" />
+    <meta data-rh="true" property="og:description" content="Licensed and insured flooring and home improvement contractor founded by Kruno Tomic in 2011. Hardwood, tile, laminate, bathroom remodels, kitchen updates, enclosed patios, roofing and handyman work. Free estimates." />
+    <meta data-rh="true" property="og:url" content="https://prestigioushomeservices.com/" />
+    <meta data-rh="true" property="og:image" content="https://prestigioushomeservices.com/logo.png" />
+    <meta data-rh="true" name="twitter:title" content="Prestigious Home Services, LLC | Flooring &amp; Home Improvement Contractor" />
+    <meta data-rh="true" name="twitter:description" content="Licensed and insured flooring and home improvement contractor founded by Kruno Tomic in 2011. Hardwood, tile, laminate, bathroom remodels, kitchen updates, enclosed patios, roofing and handyman work. Free estimates." />
 
-    <!-- Open Graph -->
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Prestigious Home Services, LLC." />
-    <meta property="og:title" content="Prestigious Home Services, LLC. | Flooring & Home Improvement" />
-    <meta property="og:description" content="Licensed and insured flooring and home improvement contractor serving customers nationwide since 2011. Free estimates. Call (386) 287-8579." />
-    <meta property="og:url" content="https://prestigioushomeservices.com/" />
-    <meta property="og:image" content="/logo.png" />
-
-    <!-- Twitter Card -->
+    <!-- Site-wide social tags -->
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:image:width" content="1024" />
+    <meta property="og:image:height" content="1024" />
+    <meta property="og:image:alt" content="Prestigious Home Services, LLC logo" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Prestigious Home Services, LLC." />
-    <meta name="twitter:description" content="Licensed and insured flooring and home improvement contractor. Nationwide service since 2011. Call (386) 287-8579." />
-    <meta name="twitter:image" content="/logo.png" />
+    <meta name="twitter:image" content="https://prestigioushomeservices.com/logo.png" />
 
-    <!-- Favicon -->
+    <!-- Icons -->
     <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="apple-touch-icon" href="/logo.png" />
 
-    <!-- JSON-LD Local Business structured data -->
+    <!-- Who this business is. The WebSite entity is what Google uses for the
+         site name shown in results; the business entity ties together the
+         name, founder, phone and services so this company isn't confused with
+         other "Prestige…" businesses. -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "HomeAndConstructionBusiness",
-      "name": "Prestigious Home Services, LLC.",
-      "founder": {
-        "@type": "Person",
-        "name": "Kruno Tomic"
-      },
-      "foundingDate": "2011",
-      "telephone": "+13862878579",
-      "url": "https://prestigioushomeservices.com",
-      "logo": "https://prestigioushomeservices.com/logo.png",
-      "description": "Licensed and insured flooring and home improvement contractor serving customers nationwide since 2011.",
-      "areaServed": {
-        "@type": "Country",
-        "name": "United States"
-      },
-      "hasOfferCatalog": {
-        "@type": "OfferCatalog",
-        "name": "Home Improvement Services",
-        "itemListElement": [
-          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Flooring Installation" } },
-          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Bathroom Remodels" } },
-          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Kitchen Updates" } },
-          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Enclosed Patios" } },
-          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Roofing" } },
-          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Handyman Services" } }
-        ]
-      },
-      "priceRange": "$$",
-      "knowsAbout": ["flooring", "tile installation", "bathroom remodeling", "kitchen renovation", "roofing", "home improvement"]
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://prestigioushomeservices.com/#website",
+          "url": "https://prestigioushomeservices.com/",
+          "name": "Prestigious Home Services",
+          "alternateName": ["Prestigious Home Services, LLC", "Prestigious Home Services LLC", "prestigioushomeservices.com"],
+          "publisher": { "@id": "https://prestigioushomeservices.com/#business" },
+          "inLanguage": "en-US"
+        },
+        {
+          "@type": "HomeAndConstructionBusiness",
+          "@id": "https://prestigioushomeservices.com/#business",
+          "name": "Prestigious Home Services",
+          "legalName": "Prestigious Home Services, LLC",
+          "alternateName": ["Prestigious Home Services LLC"],
+          "url": "https://prestigioushomeservices.com/",
+          "telephone": "+1-386-287-8579",
+          "logo": {
+            "@type": "ImageObject",
+            "@id": "https://prestigioushomeservices.com/#logo",
+            "url": "https://prestigioushomeservices.com/logo.png",
+            "width": 1024,
+            "height": 1024,
+            "caption": "Prestigious Home Services, LLC"
+          },
+          "image": { "@id": "https://prestigioushomeservices.com/#logo" },
+          "founder": { "@type": "Person", "@id": "https://prestigioushomeservices.com/#founder", "name": "Kruno Tomic" },
+          "foundingDate": "2011",
+          "description": "Licensed and insured flooring and home improvement contractor founded by Kruno Tomic in 2011. Hardwood, tile, laminate, bathroom remodels, kitchen updates, enclosed patios, roofing and handyman work. Free estimates.",
+          "slogan": "Built on craftsmanship, backed by over a decade of results.",
+          "areaServed": { "@type": "Country", "name": "United States" },
+          "priceRange": "$$",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+1-386-287-8579",
+            "contactType": "customer service",
+            "availableLanguage": "English"
+          },
+          "knowsAbout": ["hardwood flooring", "laminate flooring", "tile installation", "natural stone flooring", "bathroom remodeling", "custom tile showers", "kitchen renovation", "cabinet installation", "tile backsplashes", "enclosed patios", "roofing", "handyman services"],
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Home Improvement Services",
+            "itemListElement": [
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Flooring Installation" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Bathroom Remodels" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Kitchen Updates" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Enclosed Patios" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Roofing" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Handyman Services" } }
+            ]
+          }
+        }
+      ]
     }
     </script>
   </head>

@@ -22,7 +22,7 @@ import {
 } from 'three'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
-import { createFloorTexture, createSubwayTexture } from '../hero/floorTextures'
+import { createFloorTexture, createSurfaceTextures } from '../hero/floorTextures'
 import { FLOORS, FT, TONE_COLORS } from './designOptions'
 import { buildFloor, PATTERNS } from './floorPattern'
 import { buildFixtures, FLOOR_TOP, WALL_H } from './fixtures'
@@ -239,7 +239,7 @@ function Floor({ design, W, L, shadows, lite, reduced }) {
 // Walls and fixtures
 // ---------------------------------------------------------------------------
 
-function Walls({ W, L, shadows }) {
+function Walls({ W, L, shadows, crown }) {
   const t = 0.12
   const back = useMemo(() => rounded(W + t, WALL_H, t, 0.02), [W])
   const left = useMemo(() => rounded(t, WALL_H, L, 0.02), [L])
@@ -261,14 +261,33 @@ function Walls({ W, L, shadows }) {
         <boxGeometry args={[0.016, 0.1, L]} />
         <meshStandardMaterial color="#f6f2ec" roughness={0.6} />
       </mesh>
+      {crown && <CrownMolding W={W} L={L} />}
     </group>
   )
+}
+
+// Two stepped, rounded profiles along the top of each visible wall.
+function CrownMolding({ W, L }) {
+  const pieces = useMemo(() => [
+    rounded(W, 0.11, 0.05, 0.015), rounded(W, 0.04, 0.095, 0.015),
+    rounded(0.05, 0.11, L, 0.015), rounded(0.095, 0.04, L, 0.015),
+  ], [W, L])
+  useEffect(() => () => pieces.forEach(g => g.dispose()), [pieces])
+  const pos = [
+    [0, WALL_H - 0.055, -L / 2 + 0.025], [0, WALL_H - 0.02, -L / 2 + 0.0475],
+    [-W / 2 + 0.025, WALL_H - 0.055, 0], [-W / 2 + 0.0475, WALL_H - 0.02, 0],
+  ]
+  return pieces.map((g, i) => (
+    <mesh key={i} geometry={g} position={pos[i]}>
+      <meshStandardMaterial color="#f6f2ec" roughness={0.55} />
+    </mesh>
+  ))
 }
 
 const UNIT_CYL = new CylinderGeometry(1, 1, 1, 40)
 const UNIT_SPHERE = new SphereGeometry(1, 32, 20)
 
-function Part({ part, index, subway, shadows, reduced }) {
+function Part({ part, index, textures, shadows, reduced }) {
   const ref = useRef(null)
   const { geo, size, radius = 0.02 } = part
   const sizeKey = size.join(',')
@@ -283,13 +302,13 @@ function Part({ part, index, subway, shadows, reduced }) {
 
   const repeatKey = part.mapRepeat?.join(',')
   const map = useMemo(() => {
-    if (part.map !== 'subway') return null
-    const t = subway.clone()
+    if (!part.map) return null
+    const t = textures[part.map].clone()
     const [rx, ry] = repeatKey.split(',').map(Number)
     t.repeat.set(rx, ry)
     t.needsUpdate = true
     return t
-  }, [part.map, subway, repeatKey])
+  }, [part.map, textures, repeatKey])
   useEffect(() => () => map?.dispose(), [map])
 
   const scale = geo === 'box' ? [1, 1, 1] : size
@@ -314,7 +333,7 @@ function Part({ part, index, subway, shadows, reduced }) {
       geometry={geometry}
       position={part.pos}
       rotation={part.rot || [0, 0, 0]}
-      scale={reduced ? scale : [0.001, 0.001, 0.001]}
+      scale={scale}
       castShadow={shadows && part.cast !== false && opacity === 1}
       receiveShadow={shadows && opacity === 1}
     >
@@ -339,12 +358,12 @@ function Part({ part, index, subway, shadows, reduced }) {
 
 function Fixtures({ design, shadows, reduced }) {
   const parts = useMemo(() => buildFixtures(design), [design])
-  const subway = useMemo(() => createSubwayTexture(), [])
-  useEffect(() => () => subway.dispose(), [subway])
+  const textures = useMemo(() => createSurfaceTextures(), [])
+  useEffect(() => () => Object.values(textures).forEach(t => t.dispose()), [textures])
   return (
     <group>
       {parts.map((p, i) => (
-        <Part key={`${design.type}-${i}`} part={p} index={i} subway={subway} shadows={shadows} reduced={reduced} />
+        <Part key={`${design.type}-${i}-${p.geo}-${p.map ?? ''}-${p.opacity ?? 1}`} part={p} index={i} textures={textures} shadows={shadows} reduced={reduced} />
       ))}
     </group>
   )
@@ -439,7 +458,7 @@ export default function DesignerScene({ design, lite, reduced, paused }) {
       <StudioEnvironment />
 
       <Floor design={design} W={W} L={L} shadows={shadows} lite={lite} reduced={reduced} />
-      {design.type !== 'patio' && <Walls W={W} L={L} shadows={shadows} />}
+      {design.type !== 'patio' && <Walls W={W} L={L} shadows={shadows} crown={design.trim === 'crown'} />}
       <Fixtures design={design} shadows={shadows} reduced={reduced} />
 
       <OrbitControls

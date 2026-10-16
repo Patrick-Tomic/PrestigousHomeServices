@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async'
+import Seo from '../components/Seo'
 import ProjectGallery from '../components/ProjectGallery'
 import Hero from '../components/hero/Hero'
 import TrustStrip from '../components/TrustStrip'
@@ -10,11 +10,7 @@ import imgFloor from '../assets/floor.jpg'
 export default function Home() {
   return (
     <>
-      <Helmet>
-        <title>Prestigious Home Services, LLC. | Flooring & Home Improvement Contractor</title>
-        <meta name="description" content="Licensed and insured flooring and home improvement contractor founded by Kruno Tomic in 2011. Hardwood, tile, laminate, bathroom remodels, kitchen updates, roofing & more. Nationwide service. Free estimates." />
-        <link rel="canonical" href="https://prestigioushomeservices.com/" />
-      </Helmet>
+      <Seo path="/" />
 
       {/* Hero — 3D floor scene with the headline overlaid */}
       <Hero />
