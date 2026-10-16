@@ -1,9 +1,10 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
-import Gallery from './pages/Gallery'
+import Work from './pages/Work'
 import Contact from './pages/Contact'
+import Admin from './pages/Admin'
 
 export default function App() {
   return (
@@ -13,8 +14,10 @@ export default function App() {
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/work" element={<Work />} />
+            <Route path="/gallery" element={<Navigate to="/work" replace />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/admin" element={<Admin />} />
           </Routes>
         </main>
         <Footer />

@@ -1,0 +1,4 @@
+# The password file is only read by gallery.php, never served.
+<FilesMatch "^config(\.example)?\.php$">
+  Require all denied
+</FilesMatch>

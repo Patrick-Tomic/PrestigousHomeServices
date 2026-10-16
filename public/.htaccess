@@ -1,0 +1,8 @@
+# Serve real files (images, /api/*.php, /uploads/*) as-is and send every
+# other path to the React app so routes like /gallery and /admin work.
+RewriteEngine On
+RewriteBase /
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+RewriteRule ^ index.html [L]

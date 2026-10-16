@@ -1,1 +1,50 @@
 @import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/fraunces";
+
+/* Brand palette: the logo's red and black stay the anchor; warm charcoal,
+   off-white and an oak/brass accent give it the upscale finish. */
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
+
+  --color-ink: #14110f;
+  --color-ink-soft: #1d1916;
+  --color-cream: #f8f4ee;
+  --color-cream-deep: #efe8dd;
+
+  --color-oak-100: #f5e9d6;
+  --color-oak-200: #e9d0a8;
+  --color-oak-300: #d9b27a;
+  --color-oak-400: #c89657;
+  --color-oak-500: #a87a40;
+  --color-oak-600: #855f31;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    @apply bg-cream text-stone-800 font-sans;
+  }
+  h1, h2, h3 {
+    font-optical-sizing: auto;
+    text-wrap: balance;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
