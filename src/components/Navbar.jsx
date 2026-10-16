@@ -4,6 +4,7 @@ import { Link, NavLink } from 'react-router-dom'
 const links = [
   { to: '/', label: 'Home' },
   { to: '/work', label: 'Our Work' },
+  { to: '/design', label: 'Design Your Room' },
   { to: '/contact', label: 'Contact' },
 ]
 

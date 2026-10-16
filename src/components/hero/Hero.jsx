@@ -1,6 +1,5 @@
 import { Component, Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { MATERIALS } from './floorLayouts'
 
 // three.js lives in its own chunk, fetched only after the page has painted.
 const HeroScene = lazy(() => import('./HeroScene'))
@@ -31,49 +30,21 @@ function PhoneIcon({ className = '' }) {
   )
 }
 
-function MaterialSwitcher({ kind, onChange, className = '' }) {
-  return (
-    <div className={className}>
-      <p className="text-[10px] font-semibold tracking-[0.25em] uppercase text-stone-400 mb-2.5">Preview a floor</p>
-      <div role="group" aria-label="Floor material preview" className="inline-flex gap-1 p-1 rounded-full bg-stone-950/60 backdrop-blur-md ring-1 ring-white/10">
-        {Object.entries(MATERIALS).map(([key, { label }]) => {
-          const on = key === kind
-          return (
-            <button
-              key={key}
-              type="button"
-              aria-pressed={on}
-              onClick={() => onChange(key)}
-              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 cursor-pointer ${
-                on
-                  ? 'bg-oak-300 text-stone-950 shadow-md shadow-black/30'
-                  : 'text-stone-300 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              {label}
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
 export default function Hero() {
   const sectionRef = useRef(null)
   const [env] = useState(() => ({
     lite: media('(max-width: 767px)') || media('(pointer: coarse)') || (navigator.hardwareConcurrency || 8) <= 2,
     reduced: media('(prefers-reduced-motion: reduce)'),
   }))
+  const [webgl] = useState(supportsWebGL)
   const [load, setLoad] = useState(false)
   const [ready, setReady] = useState(false)
-  const [kind, setKind] = useState('hardwood')
   const [onScreen, setOnScreen] = useState(true)
   const [tabHidden, setTabHidden] = useState(false)
 
   // Defer the 3D scene until after first paint and the browser goes idle.
   useEffect(() => {
-    if (!supportsWebGL()) return
+    if (!webgl) return
     let idleId, timer
     const start = () => {
       const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 200))
@@ -86,7 +57,7 @@ export default function Hero() {
       clearTimeout(timer)
       window.cancelIdleCallback?.(idleId)
     }
-  }, [])
+  }, [webgl])
 
   // Stop rendering when the hero is scrolled away or the tab is hidden.
   useEffect(() => {
@@ -99,7 +70,6 @@ export default function Hero() {
 
   return (
     <section ref={sectionRef} className="relative min-h-[88svh] flex items-end bg-ink overflow-hidden isolate">
-      {/* Static poster: shown until the scene fades in, and kept if WebGL is unavailable */}
       <div
         className="absolute inset-0 -z-20"
         style={{
@@ -115,7 +85,6 @@ export default function Hero() {
         style={{ background: 'radial-gradient(circle, rgba(220,38,38,0.18) 0%, transparent 70%)' }}
         aria-hidden="true"
       />
-
       {load && (
         <div
           className={`absolute inset-0 -z-10 transition-opacity duration-[1200ms] ease-out ${ready ? 'opacity-100' : 'opacity-0'}`}
@@ -124,7 +93,6 @@ export default function Hero() {
           <SceneBoundary>
             <Suspense fallback={null}>
               <HeroScene
-                kind={kind}
                 paused={!onScreen || tabHidden}
                 lite={env.lite}
                 reduced={env.reduced}
@@ -135,18 +103,10 @@ export default function Hero() {
         </div>
       )}
 
-      {/* Scrims keep the headline readable over the floor */}
-      <div className="absolute inset-0 -z-10 pointer-events-none bg-gradient-to-t from-ink via-ink/70 to-ink/10 md:bg-gradient-to-r md:from-ink md:via-ink/75 md:to-transparent" aria-hidden="true" />
-      <div className="absolute inset-x-0 bottom-0 h-1/3 -z-10 pointer-events-none bg-gradient-to-t from-ink to-transparent" aria-hidden="true" />
+      {/* Scrims keep the headline readable over the room */}
+      <div className="absolute inset-0 -z-10 pointer-events-none bg-gradient-to-t from-ink/95 via-ink/55 to-ink/10 md:bg-gradient-to-r md:from-ink/85 md:via-ink/45 md:to-transparent" aria-hidden="true" />
+      <div className="absolute inset-x-0 bottom-0 h-1/3 -z-10 pointer-events-none bg-gradient-to-t from-ink/80 to-transparent" aria-hidden="true" />
       <div className="absolute top-0 left-0 w-1.5 h-full bg-red-600" aria-hidden="true" />
-
-      {ready && (
-        <MaterialSwitcher
-          kind={kind}
-          onChange={setKind}
-          className="absolute top-6 right-4 md:top-auto md:bottom-28 md:right-10 lg:right-[max(2.5rem,calc((100vw-72rem)/2))] text-right animate-[fadeIn_700ms_ease-out_both]"
-        />
-      )}
 
       <div className="relative max-w-6xl mx-auto px-6 pb-20 md:pb-28 w-full">
         <p className="text-oak-300 font-semibold tracking-[0.3em] uppercase text-xs mb-6">

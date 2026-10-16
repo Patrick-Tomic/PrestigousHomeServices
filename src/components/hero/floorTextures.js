@@ -1,6 +1,7 @@
-// Procedural floor textures, drawn into canvases at runtime so the hero
-// never fetches an image. Each texture is a large swatch; every plank/tile
-// samples a different window of it (see the per-instance UV in HeroScene).
+// Procedural floor textures (hero hardwood, plus the room designer's
+// materials), drawn into canvases at runtime so nothing fetches an image.
+// Each texture is a large swatch; every plank or tile samples a different
+// window of it via a per-instance UV offset.
 
 import { CanvasTexture, RepeatWrapping, SRGBColorSpace } from 'three'
 
@@ -80,22 +81,34 @@ function drawWood(w, h, { light, dark, streak, rings, warp, contrast, seed }) {
   return toTexture(canvas)
 }
 
-// Tile: warm porcelain with soft stone veining.
+export function createHardwoodTexture(lite) {
+  const k = lite ? 0.5 : 1
+  return drawWood(1024 * k, 384 * k, {
+    light: '#c99d70', dark: '#94673f', streak: '#6b4626',
+    rings: 5, warp: 1.4, contrast: 0.45, seed: 7,
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Room designer materials. Drawn light and neutral so a tone colour can be
+// multiplied on top (see TONE_COLORS in the designer).
+// ---------------------------------------------------------------------------
+
+// Porcelain tile with soft stone veining.
 function drawTile(size, seed) {
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = size
   const ctx = canvas.getContext('2d')
   const img = ctx.createImageData(size, size)
   const { fbm, noise } = makeNoise(seed)
-  const base = hex('#ebe5db'), vein = hex('#a89d8f')
-
+  const base = hex('#f0ece6'), vein = hex('#b3aba1')
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const u = x / size, v = y / size
       const n = fbm(u * 3, v * 3)
       const veinLine = Math.pow(1 - Math.abs(Math.sin((u * 2.2 + v * 1.4 + n * 2.6) * Math.PI)), 14)
-      const speck = (noise(u * 160, v * 160) - 0.5) * 0.05
-      const t = Math.min(1, veinLine * 0.45 + (n - 0.5) * 0.12 + speck)
+      const speck = (noise(u * 160, v * 160) - 0.5) * 0.04
+      const t = Math.min(1, veinLine * 0.4 + (n - 0.5) * 0.1 + speck)
       const i = (y * size + x) * 4
       for (let c = 0; c < 3; c++) img.data[i + c] = base[c] + (vein[c] - base[c]) * t
       img.data[i + 3] = 255
@@ -105,40 +118,71 @@ function drawTile(size, seed) {
   return toTexture(canvas)
 }
 
-// Sunlight through a window: four panes with mullions. Drawn tiny on purpose —
-// bilinear upscaling on the GPU gives the soft, out-of-focus edge for free.
-export function createWindowLightTexture() {
+// Travertine-style natural stone: mottled, with fine horizontal bedding.
+function drawStone(size, seed) {
   const canvas = document.createElement('canvas')
-  canvas.width = 40
-  canvas.height = 56
+  canvas.width = canvas.height = size
   const ctx = canvas.getContext('2d')
-  ctx.fillStyle = '#000'
-  ctx.fillRect(0, 0, 40, 56)
-  ctx.fillStyle = '#fff'
-  const pad = 5, gap = 3
-  const pw = (40 - pad * 2 - gap) / 2
-  const ph = (56 - pad * 2 - gap) / 2
-  for (let r = 0; r < 2; r++) {
-    for (let c = 0; c < 2; c++) {
-      ctx.fillRect(pad + c * (pw + gap), pad + r * (ph + gap), pw, ph)
+  const img = ctx.createImageData(size, size)
+  const { fbm, noise } = makeNoise(seed)
+  const light = hex('#efe4d3'), dark = hex('#c7b49a'), pit = hex('#a8957c')
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const u = x / size, v = y / size
+      const m = fbm(u * 4, v * 4)
+      const bed = (Math.sin((v * 18 + fbm(u * 2, v * 2) * 3) * Math.PI) * 0.5 + 0.5) * 0.25
+      const t = Math.min(1, Math.max(0, (m - 0.35) * 1.1 + bed))
+      const p = noise(u * 90, v * 60) > 0.84 ? 0.5 : 0
+      const i = (y * size + x) * 4
+      for (let c = 0; c < 3; c++) {
+        const b = light[c] + (dark[c] - light[c]) * t
+        img.data[i + c] = b + (pit[c] - b) * p
+      }
+      img.data[i + 3] = 255
     }
   }
-  const tex = new CanvasTexture(canvas)
-  tex.colorSpace = SRGBColorSpace
-  return tex
+  ctx.putImageData(img, 0, 0)
+  return toTexture(canvas)
 }
 
-export function createFloorTextures(lite) {
-  const k = lite ? 0.5 : 1
-  return {
-    hardwood: drawWood(1024 * k, 384 * k, {
-      light: '#d39a5c', dark: '#8a5428', streak: '#5e3416',
-      rings: 7, warp: 1.7, contrast: 0.7, seed: 7,
-    }),
-    laminate: drawWood(768 * k, 320 * k, {
-      light: '#dcc4a0', dark: '#b48f68', streak: '#9a7752',
-      rings: 6, warp: 0.9, contrast: 0.5, seed: 21,
-    }),
-    tile: drawTile(384 * k, 3),
+// Glossy white subway tile with grout, for kitchen backsplashes and showers.
+export function createSubwayTexture() {
+  const canvas = document.createElement('canvas')
+  canvas.width = 256
+  canvas.height = 256
+  const ctx = canvas.getContext('2d')
+  ctx.fillStyle = '#cfc9c1'
+  ctx.fillRect(0, 0, 256, 256)
+  const rows = 8, cols = 4, g = 3
+  const h = 256 / rows, w = 256 / cols
+  for (let r = 0; r < rows; r++) {
+    const off = r % 2 ? w / 2 : 0
+    for (let c = -1; c <= cols; c++) {
+      const x = c * w + off
+      const grad = ctx.createLinearGradient(0, r * h, 0, (r + 1) * h)
+      grad.addColorStop(0, '#fbfaf8')
+      grad.addColorStop(1, '#eceae6')
+      ctx.fillStyle = grad
+      ctx.fillRect(x + g / 2, r * h + g / 2, w - g, h - g)
+    }
   }
+  return toTexture(canvas)
+}
+
+export function createFloorTexture(kind, lite) {
+  const k = lite ? 0.5 : 1
+  if (kind === 'hardwood') {
+    return drawWood(1024 * k, 384 * k, {
+      light: '#e9c9a1', dark: '#b98b5f', streak: '#8a6140',
+      rings: 5, warp: 1.4, contrast: 0.45, seed: 7,
+    })
+  }
+  if (kind === 'laminate') {
+    return drawWood(768 * k, 320 * k, {
+      light: '#e6d6bf', dark: '#c4ab8b', streak: '#a68d6e',
+      rings: 6, warp: 0.9, contrast: 0.45, seed: 21,
+    })
+  }
+  if (kind === 'tile') return drawTile(384 * k, 3)
+  return drawStone(384 * k, 13)
 }

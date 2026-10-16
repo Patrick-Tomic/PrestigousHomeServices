@@ -15,6 +15,7 @@ export default function Footer() {
           <p className="text-white font-semibold mb-1">Quick Links</p>
           <Link to="/" className="hover:text-red-500 transition-colors">Home</Link>
           <Link to="/work" className="hover:text-red-500 transition-colors">Our Work</Link>
+          <Link to="/design" className="hover:text-red-500 transition-colors">Design Your Room</Link>
           <Link to="/contact" className="hover:text-red-500 transition-colors">Contact</Link>
         </div>
 
