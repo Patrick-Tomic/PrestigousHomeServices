@@ -8,6 +8,7 @@ import {
   decodeProject, duplicateRoom, encodeProject, importRooms, removeRoom, restoreRoom, roomDesign, updateRoom, useProject,
 } from '../components/designer/projectStore'
 import { CartIcon, RoomIcon } from '../components/designer/icons'
+import EstimateForm from '../components/EstimateForm'
 
 const media = (q) => window.matchMedia(q).matches
 
@@ -220,11 +221,22 @@ export default function Project() {
                 )}
               </div>
 
-              <aside className="lg:sticky lg:top-24 rounded-2xl bg-ink text-white p-5 md:p-6 shadow-xl shadow-stone-900/20">
+              <div className="flex flex-col gap-4">
+              {/* Send the whole project: goes straight to the owner's inbox */}
+              {!viewing && (
+                <section id="send" className="rounded-2xl bg-white ring-1 ring-stone-200 p-5 md:p-6 shadow-sm scroll-mt-24" aria-labelledby="send-title">
+                  <h2 id="send-title" className="font-display text-xl font-semibold text-stone-900 mb-1">Get a free estimate</h2>
+                  <p className="text-sm text-stone-600 mb-5">
+                    Send all {rooms.length} room{rooms.length === 1 ? '' : 's'} to us with your contact details.
+                  </p>
+                  <EstimateForm kind="project" rooms={list} submitLabel="Send my project" />
+                </section>
+              )}
+              <aside className="rounded-2xl bg-ink text-white p-5 md:p-6 shadow-xl shadow-stone-900/20">
                 <h2 className="font-display text-xl font-semibold mb-4">Project summary</h2>
                 <Totals rooms={rooms} />
                 <div className="flex flex-col gap-2.5 mt-6">
-                  <Link to="/contact" className={primaryBtn}>Get a Free Estimate <span aria-hidden="true">→</span></Link>
+                  {viewing && <Link to="/contact" className={primaryBtn}>Get a Free Estimate <span aria-hidden="true">→</span></Link>}
                   {touch ? (
                     <a href={`sms:${PHONE}?&body=${encodeURIComponent(text)}`} className={secondaryBtn}>Text my project to us</a>
                   ) : (
@@ -240,6 +252,7 @@ export default function Project() {
                   </div>
                 </div>
               </aside>
+              </div>
             </div>
           )}
         </div>

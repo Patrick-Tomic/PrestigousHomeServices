@@ -1,10 +1,13 @@
 // Services shown on the Home page (summary) and the Work page (full detail).
 // `category` matches the gallery categories in ./gallery.js so each service
-// shows its own photos.
+// shows its own photos. `estimate` preselects the service on the Contact
+// form; `designer` is the matching room type in the 3D room designer.
 
 export const services = [
   {
     slug: 'flooring',
+    estimate: 'Flooring Installation',
+    designer: 'living',
     num: '01',
     title: 'Flooring Installation',
     category: 'Flooring',
@@ -23,6 +26,8 @@ export const services = [
   },
   {
     slug: 'bathrooms',
+    estimate: 'Bathroom Remodel',
+    designer: 'bathroom',
     num: '02',
     title: 'Bathroom Remodels',
     category: 'Bathroom',
@@ -41,6 +46,8 @@ export const services = [
   },
   {
     slug: 'kitchens',
+    estimate: 'Kitchen Updates',
+    designer: 'kitchen',
     num: '03',
     title: 'Kitchen Updates',
     category: 'Kitchen',
@@ -57,6 +64,8 @@ export const services = [
   },
   {
     slug: 'patios',
+    estimate: 'Enclosed Patio',
+    designer: 'patio',
     num: '04',
     title: 'Enclosed Patios',
     category: 'Patio',
@@ -73,6 +82,7 @@ export const services = [
   },
   {
     slug: 'roofing',
+    estimate: 'Roofing',
     num: '05',
     title: 'Roofing',
     category: 'Roofing',
@@ -89,6 +99,7 @@ export const services = [
   },
   {
     slug: 'handyman',
+    estimate: 'Handyman Services',
     num: '06',
     title: 'Handyman Services',
     category: 'Handyman',

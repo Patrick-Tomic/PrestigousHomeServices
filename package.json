@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build && node scripts/prerender.mjs",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "php": "php -S localhost:8000 -t public"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Seo from '../components/Seo'
 import { CATEGORIES, callApi, fetchUploadedPhotos } from '../data/gallery'
+import InquiryInbox from '../components/admin/InquiryInbox'
 
 const SESSION_KEY = 'gallery-admin-password'
 const MAX_SIDE = 2000
@@ -48,7 +49,8 @@ function Login({ onLogin }) {
     setBusy(true)
     setError('')
     try {
-      await callApi({ action: 'login', password })
+      const res = await callApi({ action: 'login', password })
+      if (res.ok !== true) throw new Error('Could not sign in. Please try again.')
       onLogin(password)
     } catch (err) {
       setError(err.message)
@@ -130,10 +132,11 @@ function Uploader({ password, onUploaded, onAuthError }) {
           label: item.label,
           photo: new File([photo], 'photo.jpg', { type: 'image/jpeg' }),
         })
+        if (!saved?.id || !saved?.file) throw new Error('The server didn’t confirm the upload. Please try again.')
         update(item.key, { status: 'done' })
         onUploaded(saved)
       } catch (err) {
-        if (err.message === 'Wrong password.') { onAuthError(); return }
+        if (err.status === 401) { setBusy(false); onAuthError(); return }
         update(item.key, { status: 'error', error: err.message })
       }
     }
@@ -242,51 +245,95 @@ function Uploader({ password, onUploaded, onAuthError }) {
   )
 }
 
-function ManagePhotos({ photos, loading, onDelete }) {
-  const [deleting, setDeleting] = useState(null)
+function PhotoCard({ photo, onDelete, onSave }) {
+  const [editing, setEditing] = useState(false)
+  const [label, setLabel] = useState(photo.label)
+  const [category, setCategory] = useState(photo.category)
+  const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
 
-  const handleDelete = async (photo) => {
+  const save = async () => {
+    setBusy('save')
+    setError('')
+    try {
+      await onSave(photo, { label, category })
+      setEditing(false)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusy('')
+    }
+  }
+
+  const remove = async () => {
     if (!window.confirm(`Remove “${photo.label}” from the gallery? This can’t be undone.`)) return
-    setDeleting(photo.id)
+    setBusy('delete')
     setError('')
     try {
       await onDelete(photo)
     } catch (err) {
       setError(err.message)
-    } finally {
-      setDeleting(null)
+      setBusy('')
     }
   }
 
   return (
+    <li className="border border-stone-200 rounded-md overflow-hidden bg-white">
+      <img src={photo.src} alt={photo.label} loading="lazy" className="w-full aspect-video object-cover bg-stone-100" />
+      <div className="p-2.5">
+        {editing ? (
+          <div className="flex flex-col gap-2">
+            <input
+              value={label}
+              onChange={e => setLabel(e.target.value)}
+              maxLength={80}
+              aria-label="Caption"
+              className="border border-stone-300 rounded-md px-2 py-1.5 text-sm"
+            />
+            <select value={category} onChange={e => setCategory(e.target.value)} aria-label="Category" className="border border-stone-300 rounded-md px-2 py-1.5 text-sm bg-white">
+              {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+            </select>
+            <div className="flex gap-3">
+              <button type="button" onClick={save} disabled={!!busy} className="text-sm font-semibold text-red-700 hover:text-red-600 disabled:opacity-50">
+                {busy === 'save' ? 'Saving…' : 'Save'}
+              </button>
+              <button type="button" onClick={() => { setEditing(false); setLabel(photo.label); setCategory(photo.category) }} className="text-sm text-stone-500 hover:text-stone-800">
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className="text-xs font-bold text-red-700 uppercase tracking-wider">{photo.category}</p>
+            <p className="text-sm text-stone-800 truncate">{photo.label}</p>
+            <div className="flex gap-4 mt-1">
+              <button type="button" onClick={() => setEditing(true)} className="text-sm text-stone-600 hover:text-stone-900">Edit</button>
+              <button type="button" onClick={remove} disabled={!!busy} className="text-sm text-stone-600 hover:text-red-700 disabled:opacity-50">
+                {busy === 'delete' ? 'Removing…' : 'Remove'}
+              </button>
+            </div>
+          </>
+        )}
+        {error && <p className="text-xs text-red-700 mt-1">{error}</p>}
+      </div>
+    </li>
+  )
+}
+
+function ManagePhotos({ photos, loading, onDelete, onSave }) {
+  return (
     <section className="bg-white border border-stone-200 rounded-lg shadow-sm p-5 sm:p-6">
       <h2 className="text-xl font-bold text-stone-800">Uploaded photos</h2>
       <p className="text-sm text-stone-500 mt-1 mb-4">Newest first. These appear at the top of the gallery.</p>
-      {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
 
       {loading ? (
-        <p className="text-stone-400 text-sm">Loading…</p>
+        <p className="text-stone-500 text-sm">Loading…</p>
       ) : photos.length === 0 ? (
-        <p className="text-stone-400 text-sm">No photos uploaded yet.</p>
+        <p className="text-stone-500 text-sm">No photos uploaded yet. Add some above and they’ll show up in the gallery.</p>
       ) : (
         <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {photos.map(photo => (
-            <li key={photo.id} className="border border-stone-200 rounded-md overflow-hidden">
-              <img src={photo.src} alt={photo.label} loading="lazy" className="w-full aspect-video object-cover bg-stone-100" />
-              <div className="p-2">
-                <p className="text-xs font-bold text-red-600 uppercase tracking-wider">{photo.category}</p>
-                <p className="text-sm text-stone-800 truncate">{photo.label}</p>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(photo)}
-                  disabled={deleting === photo.id}
-                  className="mt-1 text-sm text-stone-500 hover:text-red-600 disabled:opacity-50"
-                >
-                  {deleting === photo.id ? 'Removing…' : 'Remove'}
-                </button>
-              </div>
-            </li>
+            <PhotoCard key={photo.id} photo={photo} onDelete={onDelete} onSave={onSave} />
           ))}
         </ul>
       )}
@@ -294,10 +341,17 @@ function ManagePhotos({ photos, loading, onDelete }) {
   )
 }
 
+const TABS = [
+  { id: 'inquiries', label: 'Inquiries' },
+  { id: 'photos', label: 'Gallery photos' },
+]
+
 export default function Admin() {
   const [password, setPassword] = useState(readSession)
+  const [tab, setTab] = useState(() => (window.location.hash === '#photos' ? 'photos' : 'inquiries'))
   const [photos, setPhotos] = useState([])
   const [loading, setLoading] = useState(true)
+  const [newCount, setNewCount] = useState(0)
 
   useEffect(() => {
     if (!password) return
@@ -306,45 +360,85 @@ export default function Admin() {
 
   const login = (value) => { writeSession(value); setPassword(value) }
   const logout = () => { writeSession(''); setPassword('') }
+  const chooseTab = (id) => {
+    setTab(id)
+    window.history.replaceState(null, '', id === 'photos' ? '#photos' : window.location.pathname)
+  }
 
   const addPhoto = (photo) =>
     setPhotos(prev => [{ ...photo, src: `/uploads/gallery/${photo.file}` }, ...prev])
 
-  const deletePhoto = async (photo) => {
+  const withAuth = async (fields) => {
     try {
-      await callApi({ action: 'delete', password, id: photo.id })
+      return await callApi({ ...fields, password })
     } catch (err) {
-      if (err.message === 'Wrong password.') logout()
+      if (err.status === 401) logout()
       throw err
     }
+  }
+
+  const deletePhoto = async (photo) => {
+    await withAuth({ action: 'delete', id: photo.id })
     setPhotos(prev => prev.filter(p => p.id !== photo.id))
+  }
+
+  const savePhoto = async (photo, { label, category }) => {
+    const { photo: saved } = await withAuth({ action: 'update', id: photo.id, label, category })
+    setPhotos(prev => prev.map(p => (p.id === photo.id ? { ...p, ...saved } : p)))
   }
 
   return (
     <>
       <Seo path="/admin" />
 
-      <section className="bg-stone-900 text-white py-12">
+      <section className="bg-ink text-white py-10">
         <div className="max-w-4xl mx-auto px-4 flex items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-3">Gallery Admin</h1>
-            <div className="w-16 h-1 bg-red-600" />
+            <p className="text-oak-300 font-semibold tracking-[0.3em] uppercase text-xs mb-3">Owner</p>
+            <h1 className="font-display text-3xl md:text-4xl font-semibold">Admin</h1>
           </div>
           {password && (
-            <button onClick={logout} className="text-sm text-stone-400 hover:text-white">Sign out</button>
+            <button onClick={logout} className="text-sm text-stone-300 hover:text-white">Sign out</button>
           )}
         </div>
+        {password && (
+          <div className="max-w-4xl mx-auto px-4 mt-6">
+            <div role="tablist" aria-label="Admin sections" className="inline-flex gap-1 p-1 rounded-full bg-white/10">
+              {TABS.map(t => (
+                <button
+                  key={t.id}
+                  role="tab"
+                  id={`tab-${t.id}`}
+                  aria-selected={tab === t.id}
+                  aria-controls={`panel-${t.id}`}
+                  onClick={() => chooseTab(t.id)}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${tab === t.id ? 'bg-white text-stone-900' : 'text-stone-200 hover:text-white'}`}
+                >
+                  {t.label}
+                  {t.id === 'inquiries' && newCount > 0 && (
+                    <span className="ml-2 inline-flex min-w-5 h-5 px-1.5 items-center justify-center rounded-full bg-red-600 text-white text-xs">{newCount}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
-      <div className="bg-stone-50 py-10">
+      <div className="bg-stone-50 py-10 min-h-[50vh]">
         <div className="max-w-4xl mx-auto px-4 flex flex-col gap-6">
-          {password ? (
-            <>
-              <Uploader password={password} onUploaded={addPhoto} onAuthError={logout} />
-              <ManagePhotos photos={photos} loading={loading} onDelete={deletePhoto} />
-            </>
-          ) : (
+          {!password ? (
             <Login onLogin={login} />
+          ) : (
+            <>
+              <div role="tabpanel" id="panel-inquiries" aria-labelledby="tab-inquiries" hidden={tab !== 'inquiries'}>
+                <InquiryInbox password={password} onAuthError={logout} onNewCount={setNewCount} />
+              </div>
+              <div role="tabpanel" id="panel-photos" aria-labelledby="tab-photos" hidden={tab !== 'photos'} className="flex flex-col gap-6">
+                <Uploader password={password} onUploaded={addPhoto} onAuthError={logout} />
+                <ManagePhotos photos={photos} loading={loading} onDelete={deletePhoto} onSave={savePhoto} />
+              </div>
+            </>
           )}
         </div>
       </div>

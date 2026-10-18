@@ -34,6 +34,11 @@
     font-optical-sizing: auto;
     text-wrap: balance;
   }
+  /* Keyboard focus is always visible (mouse clicks don't show it). */
+  :focus-visible {
+    outline: 2px solid var(--color-red-600);
+    outline-offset: 2px;
+  }
 }
 
 @keyframes fadeIn {

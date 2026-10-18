@@ -27,7 +27,7 @@ export default function Footer() {
           <p className="mt-1">Serving Nationwide</p>
         </div>
       </div>
-      <div className="border-t border-stone-800 text-center py-4 text-xs text-stone-600">
+      <div className="border-t border-stone-800 text-center py-4 text-xs text-stone-400">
         &copy; {new Date().getFullYear()} Prestigious Home Services, LLC. All rights reserved.
       </div>
     </footer>

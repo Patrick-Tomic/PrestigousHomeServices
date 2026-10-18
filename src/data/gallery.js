@@ -2,28 +2,29 @@
 // not in the build, so the gallery loads them at runtime.
 
 import { useState, useEffect } from 'react'
+import { postApi } from './api'
 
-import imgBathroom  from '../assets/bathroom.jpg'
-import imgFloorJpg  from '../assets/floor.jpg'
-import imgFloorPng  from '../assets/floor.png'
-import imgRoofing   from '../assets/roofing.png'
-import imgShowerA   from '../assets/showerA.jpeg'
-import imgShowerB   from '../assets/showerB.jpeg'
-import imgShowerC   from '../assets/showerC.jpeg'
-import imgShowerD   from '../assets/showerD.jpeg'
-import imgShowerE   from '../assets/showerE.jpg'
+// Built-in photos as responsive WebP (src/assets/web/, made from the
+// originals in src/assets/): 800px for phones and grids, 1600px for large
+// screens and the lightbox.
+const pics = import.meta.glob('../assets/web/*.webp', { eager: true, import: 'default' })
+const pic = (name) => {
+  const small = pics[`../assets/web/${name}-800.webp`]
+  const large = pics[`../assets/web/${name}-1600.webp`]
+  return { src: large, srcSet: `${small} 800w, ${large} 1600w` }
+}
 
 // Built-in photos. New ones are added by the owner at /admin.
 const builtInPhotos = [
-  { id: 1, src: imgShowerA,   category: 'Bathroom', label: 'Custom Shower Tile' },
-  { id: 2, src: imgFloorJpg,  category: 'Flooring', label: 'Flooring Installation' },
-  { id: 3, src: imgShowerB,   category: 'Bathroom', label: 'Shower Remodel' },
-  { id: 4, src: imgFloorPng,  category: 'Flooring', label: 'Hardwood Flooring' },
-  { id: 5, src: imgShowerC,   category: 'Bathroom', label: 'Tile Work' },
-  { id: 6, src: imgRoofing,   category: 'Roofing',  label: 'Roof Installation' },
-  { id: 7, src: imgShowerD,   category: 'Bathroom', label: 'Master Shower' },
-  { id: 8, src: imgBathroom,  category: 'Bathroom', label: 'Bathroom Remodel' },
-  { id: 9, src: imgShowerE,   category: 'Bathroom', label: 'Walk-In Shower' },
+  { id: 1, ...pic('showerA'),  category: 'Bathroom', label: 'Custom Shower Tile' },
+  { id: 2, ...pic('floor'),    category: 'Flooring', label: 'Flooring Installation' },
+  { id: 3, ...pic('showerB'),  category: 'Bathroom', label: 'Shower Remodel' },
+  { id: 4, ...pic('hardwood'), category: 'Flooring', label: 'Hardwood Flooring' },
+  { id: 5, ...pic('showerC'),  category: 'Bathroom', label: 'Tile Work' },
+  { id: 6, ...pic('roofing'),  category: 'Roofing',  label: 'Roof Installation' },
+  { id: 7, ...pic('showerD'),  category: 'Bathroom', label: 'Master Shower' },
+  { id: 8, ...pic('bathroom'), category: 'Bathroom', label: 'Bathroom Remodel' },
+  { id: 9, ...pic('showerE'),  category: 'Bathroom', label: 'Walk-In Shower' },
 ]
 
 export const CATEGORIES = ['Flooring', 'Bathroom', 'Kitchen', 'Patio', 'Roofing', 'Handyman']
@@ -33,30 +34,19 @@ const UPLOADS_URL = '/uploads/gallery/'
 
 export async function fetchUploadedPhotos() {
   try {
-    const res = await fetch(`${UPLOADS_URL}photos.json`, { cache: 'no-store' })
+    const res = await fetch('/api/photos.php', { cache: 'no-store' })
     if (!res.ok) return []
     const list = await res.json()
     if (!Array.isArray(list)) return []
-    return list.map(p => ({ ...p, src: UPLOADS_URL + p.file }))
+    return list
+      .filter(p => p && typeof p.file === 'string' && p.id)
+      .map(p => ({ ...p, src: UPLOADS_URL + p.file }))
   } catch {
     return []
   }
 }
 
-export async function callApi(fields) {
-  const body = new FormData()
-  for (const [key, value] of Object.entries(fields)) body.append(key, value)
-
-  let res
-  try {
-    res = await fetch(API_URL, { method: 'POST', body })
-  } catch {
-    throw new Error('Could not reach the server. Check your connection and try again.')
-  }
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.error || `Server error (${res.status}).`)
-  return data
-}
+export const callApi = (fields) => postApi(API_URL, fields)
 
 // Uploaded photos (newest first) followed by the built-in ones.
 export function useGalleryPhotos() {

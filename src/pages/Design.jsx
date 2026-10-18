@@ -1,7 +1,7 @@
 import { Component, Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 import Seo from '../components/Seo'
 import { Link, useSearchParams } from 'react-router-dom'
-import { addRoom, updateRoom, useProject } from '../components/designer/projectStore'
+import { addRoom, roomDesign, updateRoom, useProject } from '../components/designer/projectStore'
 import { CartIcon, RoomIcon } from '../components/designer/icons'
 import {
   BACKSPLASH, BATH_COUNTERS, CABINETS, COUNTERS, ENCLOSURES, FINISHES, FLOORS, GLASS, KITCHEN_LAYOUTS, PATIO_PANELS, PHONE, ROOM_TYPES,
@@ -168,6 +168,21 @@ export default function Design() {
   const rooms = useProject()
   const [editId, setEditId] = useState(() => params.get('edit'))
   const editing = rooms.find(r => r.id === editId) || null
+  // Editing a saved room: compare against what's saved.
+  const dirty = !!editing && serializeDesign(design).toString() !== serializeDesign(roomDesign(editing)).toString()
+
+  // Warn before closing or reloading the tab with unsaved edits.
+  useEffect(() => {
+    if (!dirty) return
+    const warn = (e) => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [dirty])
+
+  const discard = () => setDesign(roomDesign(editing))
+  const resetDefaults = () => {
+    if (window.confirm('Reset this room to the default size and finishes?')) setDesign(defaultDesign(design.type))
+  }
   // Confirmation after a save; it belongs to that exact design, so any
   // further change hides it.
   const [savedFor, setSavedFor] = useState(null)
@@ -372,6 +387,9 @@ export default function Design() {
                       <Choice label="Pantry cabinet" options={YES_NO} value={design.pantry} onChange={(pantry) => update({ pantry })} />
                     </Field>
                   </div>
+                  {design.pantry === 'yes' && !kitchen.pantryFits && (
+                    <Note>A pantry cabinet needs a wider room alongside the fridge. Try increasing the {design.layout === 'u' ? 'length' : 'width'}.</Note>
+                  )}
                   {design.island === 'yes' && !kitchen.islandFits && (
                     <Note>{design.layout === 'u' ? 'A U-shaped layout uses a peninsula instead of an island.' : 'An island needs a larger room. Try increasing the size.'}</Note>
                   )}
@@ -464,7 +482,9 @@ export default function Design() {
             <section className="rounded-2xl bg-ink text-white p-5 md:p-6 shadow-xl shadow-stone-900/20">
               <div className="flex items-baseline justify-between gap-3 mb-4">
                 <h2 className="font-display text-xl font-semibold">{editing ? editing.name : 'This room'}</h2>
-                {editing && <span className="text-[11px] font-semibold tracking-wider uppercase text-oak-300">In your project</span>}
+                {editing && (dirty
+                  ? <span className="text-[11px] font-semibold tracking-wider uppercase text-amber-300">Unsaved changes</span>
+                  : <span className="text-[11px] font-semibold tracking-wider uppercase text-oak-300">Saved in your project</span>)}
               </div>
               <dl className="divide-y divide-white/10 text-sm">
                 {summaryLines(design).map(([k, v]) => (
@@ -485,14 +505,28 @@ export default function Design() {
               {/* Project actions */}
               <div className="flex flex-col gap-2.5">
                 {editing ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    <button type="button" onClick={saveEdit} className={primaryBtn}>Update room</button>
-                    <button type="button" onClick={saveNew} className={secondaryBtn}>Save as new</button>
-                  </div>
+                  <>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button type="button" onClick={saveEdit} disabled={!dirty} className={`${primaryBtn} disabled:opacity-50 disabled:cursor-default`}>
+                        {dirty ? 'Update room' : 'Saved ✓'}
+                      </button>
+                      <button type="button" onClick={saveNew} className={secondaryBtn}>Save as new</button>
+                    </div>
+                    {dirty && (
+                      <button type="button" onClick={discard} className="text-sm text-stone-300 hover:text-white font-semibold cursor-pointer">
+                        Discard changes
+                      </button>
+                    )}
+                  </>
                 ) : (
-                  <button type="button" onClick={saveNew} className={primaryBtn}>
-                    <CartIcon className="w-4 h-4" /> Add to my project
-                  </button>
+                  <>
+                    <button type="button" onClick={saveNew} className={primaryBtn}>
+                      <CartIcon className="w-4 h-4" /> Add to my project
+                    </button>
+                    <button type="button" onClick={resetDefaults} className="text-sm text-stone-400 hover:text-white font-semibold cursor-pointer">
+                      Reset to defaults
+                    </button>
+                  </>
                 )}
                 <div aria-live="polite">
                   {saved && (

@@ -1,4 +1,6 @@
-# The password file is only read by gallery.php, never served.
-<FilesMatch "^config(\.example)?\.php$">
+# Only the endpoints are reachable. config.php (the password), lib.php
+# (helpers) and the data/ folder (inquiries) are never served.
+<FilesMatch "^(config(\.example)?|lib)\.php$">
   Require all denied
 </FilesMatch>
+Options -Indexes

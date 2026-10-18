@@ -25,4 +25,5 @@ dist-ssr
 
 # Gallery admin: server password and photos uploaded while testing locally
 public/api/config.php
+public/api/data
 public/uploads

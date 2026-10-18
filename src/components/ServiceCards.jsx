@@ -79,7 +79,7 @@ export default function ServiceCards({ services }) {
               <p className="text-stone-600 leading-relaxed mb-7 flex-1">{service.body}</p>
               <div className="flex flex-wrap gap-x-6 gap-y-2 pt-5 border-t border-stone-100">
                 <Link
-                  to="/contact"
+                  to={`/contact?service=${encodeURIComponent(service.estimate)}`}
                   className="inline-flex items-center gap-1.5 text-stone-900 font-bold hover:text-red-600 transition-colors text-xs tracking-wider group/link"
                 >
                   GET A FREE ESTIMATE

@@ -6,6 +6,7 @@
 //   login  - check the password
 //   upload - `photo` (image file), `category`, `label`
 //   delete - `id`
+//   update - `id`, `category`, `label`
 
 declare(strict_types=1);
 
@@ -15,6 +16,8 @@ header('Cache-Control: no-store');
 
 const MAX_BYTES = 15 * 1024 * 1024;
 const EXTENSIONS = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+// Must match CATEGORIES in src/data/gallery.js.
+const CATEGORIES = ['Flooring', 'Bathroom', 'Kitchen', 'Patio', 'Roofing', 'Handyman'];
 
 $uploadDir = dirname(__DIR__) . '/uploads/gallery';
 $manifestPath = $uploadDir . '/photos.json';
@@ -101,7 +104,7 @@ switch ($_POST['action'] ?? '') {
 
         $category = clean((string)($_POST['category'] ?? ''), 40);
         $label = clean((string)($_POST['label'] ?? ''), 80);
-        if ($category === '') {
+        if (!in_array($category, CATEGORIES, true)) {
             respond(400, ['error' => 'Pick a category for the photo.']);
         }
 
@@ -144,6 +147,28 @@ switch ($_POST['action'] ?? '') {
             unlink($filePath);
         }
         respond(200, ['ok' => true]);
+
+    case 'update':
+        $id = (string)($_POST['id'] ?? '');
+        $category = clean((string)($_POST['category'] ?? ''), 40);
+        $label = clean((string)($_POST['label'] ?? ''), 80);
+        if (!in_array($category, CATEGORIES, true)) {
+            respond(400, ['error' => 'Pick a category for the photo.']);
+        }
+        $updated = updateManifest($manifestPath, function (array $photos) use ($id, $category, $label) {
+            foreach ($photos as &$photo) {
+                if (($photo['id'] ?? null) === $id) {
+                    $photo['category'] = $category;
+                    $photo['label'] = $label !== '' ? $label : $category;
+                    return [$photos, $photo];
+                }
+            }
+            return [$photos, null];
+        });
+        if (!$updated) {
+            respond(404, ['error' => 'That photo was not found.']);
+        }
+        respond(200, ['photo' => $updated]);
 
     default:
         respond(400, ['error' => 'Unknown action.']);

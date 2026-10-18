@@ -1,21 +1,43 @@
-# Serve real files (images, /api/*.php, /uploads/*) as-is, serve prerendered
-# pages (/work -> work.html, written by scripts/prerender.mjs), and send every
-# other path to the React app so routes like /admin work.
+# Routing for the built site (Apache).
+#  - Real files (assets, images, /api/*.php, /uploads/*) are served as-is.
+#  - Each page is a prerendered file: /work -> work.html (scripts/prerender.mjs).
+#  - Anything else gets a real 404 status with the site's Not Found page.
 RewriteEngine On
 RewriteBase /
 
-# /gallery moved to /work
+ErrorDocument 404 /404.html
+
+# Old links
 RewriteRule ^gallery/?$ /work [L,R=301]
+# (only when the visitor asked for the .html URL, not after our own rewrite)
+RewriteCond %{THE_REQUEST} \s/+(work|design|contact|project|admin)\.html[\s?]
+RewriteRule ^ /%1 [L,R=301]
 
 # Trailing slash -> no slash (canonical URLs have none)
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.+)/$ /$1 [L,R=301]
 
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
-
-RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+# Prerendered pages (works whatever the host's document root is)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}.html -f
 RewriteRule ^([a-z0-9-]+)$ $1.html [L]
 
-RewriteRule ^ index.html [L]
+# Compression for text files (skipped if the host lacks mod_deflate).
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain application/javascript application/json image/svg+xml application/xml
+</IfModule>
+
+# Caching: /assets/ files and uploaded photos have unique names, so they're
+# cached for a year; other images (logo, icons) for a week; pages are always
+# revalidated so new builds show up immediately.
+<IfModule mod_headers.c>
+  <If "%{REQUEST_URI} =~ m#^/assets/|^/uploads/gallery/[^/]+\.(jpe?g|png|webp)$#">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </If>
+  <ElseIf "%{REQUEST_URI} =~ m#\.(png|webp|jpe?g|svg|ico)$#">
+    Header set Cache-Control "public, max-age=604800"
+  </ElseIf>
+  <ElseIf "%{REQUEST_URI} =~ m#(\.html|/[a-z0-9-]*)$#">
+    Header set Cache-Control "no-cache"
+  </ElseIf>
+</IfModule>

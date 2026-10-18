@@ -99,8 +99,16 @@ const bodies = {
     <p>Fully licensed &amp; insured · Free estimates</p>`,
 }
 
+const notFound = `
+  <main>
+    <h1>Page not found</h1>
+    <p>That page doesn’t exist or may have moved.</p>
+    <p><a href="/">Home</a> · <a href="/work">Our Work</a> · <a href="/design">Design Your Room</a> · <a href="/contact">Contact</a></p>
+  </main>`
+
 function body(html, path) {
   const page = PAGES[path]
+  if (path === '/404') return html.replace('<div id="root"></div>', `<div id="root"><div style="max-width:72rem;margin:0 auto;padding:2rem 1.5rem;font-family:system-ui,sans-serif">${notFound}</div></div>`)
   if (page.noindex) return html
   const content = `${nav}
   <main>
@@ -114,8 +122,10 @@ function body(html, path) {
 // ---------------------------------------------------------------------------
 
 for (const path of Object.keys(PAGES)) {
-  const html = body(head(sameAs(template), path), path)
+  let html = body(head(sameAs(template), path), path)
   const file = path === '/' ? 'index.html' : `${path.slice(1)}.html`
+  // The 404 page has no canonical URL of its own.
+  if (path === '/404') html = html.replace(/\s*<link data-rh="true" rel="canonical"[^>]*>/, '')
   writeFileSync(join(dist, file), html)
   console.log(`prerender: ${file}`)
 }

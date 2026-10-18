@@ -66,32 +66,39 @@ const serviceIds = services.map(s => s.slug)
 
 function ServiceSection({ service, photos, shaded }) {
   return (
-    <section id={service.slug} className={`py-20 md:py-24 scroll-mt-32 ${shaded ? 'bg-stone-50' : 'bg-white'}`}>
+    <section id={service.slug} className={`py-20 md:py-24 scroll-mt-32 ${shaded ? 'bg-cream' : 'bg-white'}`}>
       <div className="max-w-6xl mx-auto px-6">
         <Reveal className="grid md:grid-cols-5 gap-10 md:gap-14 items-start">
           <div className="md:col-span-3">
-            <p className="text-red-600 font-black text-sm tabular-nums mb-3">{service.num}</p>
-            <h2 className="text-4xl md:text-5xl font-black text-stone-900 leading-tight mb-3">{service.title}</h2>
-            <p className="text-xs text-stone-400 font-semibold tracking-widest uppercase mb-8">{service.detail}</p>
+            <p className="font-display text-oak-600 font-semibold text-sm tabular-nums mb-3">{service.num}</p>
+            <h2 className="font-display text-4xl md:text-5xl font-semibold text-stone-900 leading-tight mb-3">{service.title}</h2>
+            <p className="text-xs text-oak-600 font-semibold tracking-widest uppercase mb-8">{service.detail}</p>
             <div className="space-y-5 text-stone-600 text-lg leading-relaxed">
               <p className="text-stone-800 font-medium">{service.intro}</p>
               <p>{service.description}</p>
             </div>
-            <Link
-              to="/contact"
-              className="mt-8 inline-flex items-center gap-2 bg-stone-950 hover:bg-red-600 text-white font-bold px-6 py-3 text-sm tracking-wide transition-colors group"
-            >
-              GET A FREE ESTIMATE
-              <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
-            </Link>
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <Link
+                to={`/contact?service=${encodeURIComponent(service.estimate)}`}
+                className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-full text-sm tracking-wide transition-colors group"
+              >
+                Get a free {service.title.toLowerCase()} estimate
+                <span className="group-hover:translate-x-1 transition-transform inline-block" aria-hidden="true">→</span>
+              </Link>
+              {service.designer && (
+                <Link to={`/design?room=${service.designer}`} className="text-sm font-semibold text-stone-700 hover:text-red-700 underline-offset-4 hover:underline">
+                  Design it in 3D →
+                </Link>
+              )}
+            </div>
           </div>
 
-          <div className="md:col-span-2 border-l-4 border-red-600 bg-white shadow-sm p-6 md:mt-12">
-            <p className="text-red-600 font-bold tracking-widest text-xs uppercase mb-4">What We Do</p>
+          <div className="md:col-span-2 border-l-4 border-red-600 bg-white rounded-r-xl ring-1 ring-stone-200/70 p-6 md:mt-12">
+            <p className="text-red-700 font-bold tracking-widest text-xs uppercase mb-4">What We Do</p>
             <ul className="space-y-3">
               {service.includes.map(item => (
                 <li key={item} className="flex gap-3 text-stone-700">
-                  <span className="text-red-600 font-black" aria-hidden="true">✓</span>
+                  <span className="text-red-600 font-bold" aria-hidden="true">✓</span>
                   {item}
                 </li>
               ))}
@@ -106,9 +113,9 @@ function ServiceSection({ service, photos, shaded }) {
           {photos.length > 0 ? (
             <PhotoGrid photos={photos} />
           ) : (
-            <div className="border-2 border-dashed border-stone-200 py-12 px-6 text-center">
-              <p className="text-stone-500">Project photos coming soon.</p>
-              <a href="tel:+13862878579" className="text-red-600 hover:text-red-500 font-semibold text-sm mt-1 inline-block">
+            <div className="border-2 border-dashed border-stone-200 rounded-xl py-12 px-6 text-center">
+              <p className="text-stone-600">Project photos coming soon.</p>
+              <a href="tel:+13862878579" className="text-red-700 hover:text-red-600 font-semibold text-sm mt-1 inline-block">
                 Call (386) 287-8579 to ask about past work
               </a>
             </div>
@@ -135,14 +142,14 @@ export default function Work() {
       <Seo path="/work" jsonLd={servicesLd} />
 
       {/* Page header */}
-      <section className="bg-stone-950 pt-24 pb-16 relative overflow-hidden">
+      <section className="bg-ink pt-20 pb-14 md:pt-24 md:pb-16 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-1.5 h-full bg-red-600" aria-hidden="true" />
         <div
           ref={headerRef}
           className={`max-w-6xl mx-auto px-6 transition-all duration-700 ${headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
         >
-          <p className="text-red-500 font-bold tracking-[0.25em] uppercase text-xs mb-4">Services &amp; Projects</p>
-          <h1 className="text-5xl md:text-7xl font-black text-white leading-none tracking-tight mb-6">
+          <p className="text-oak-300 font-semibold tracking-[0.3em] uppercase text-xs mb-4">Services &amp; Projects</p>
+          <h1 className="font-display text-5xl md:text-7xl font-semibold text-white leading-none tracking-tight mb-6">
             Our Work
           </h1>
           <p className="text-stone-400 text-lg max-w-2xl leading-relaxed">
@@ -160,7 +167,8 @@ export default function Work() {
               <a
                 key={s.slug}
                 href={`#${s.slug}`}
-                className={`whitespace-nowrap px-4 py-1.5 rounded text-sm font-bold tracking-wide transition-colors ${
+                aria-current={active === s.slug ? 'true' : undefined}
+                className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-semibold tracking-wide transition-colors ${
                   active === s.slug ? 'bg-red-600 text-white' : 'text-stone-500 hover:text-stone-900'
                 }`}
               >
@@ -181,9 +189,9 @@ export default function Work() {
       ))}
 
       {/* CTA */}
-      <section className="bg-red-600 py-20 text-center">
+      <section className="bg-red-700 py-20 text-center">
         <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-black text-white leading-tight mb-4">
+          <h2 className="font-display text-4xl md:text-5xl font-semibold text-white leading-tight mb-4">
             Like what you see?
           </h2>
           <p className="text-red-100 text-lg mb-10 max-w-xl mx-auto">
@@ -191,9 +199,9 @@ export default function Work() {
           </p>
           <Link
             to="/contact"
-            className="bg-stone-950 hover:bg-stone-800 text-white font-black px-10 py-5 text-lg tracking-wide transition-colors inline-block"
+            className="bg-ink hover:bg-stone-800 text-white font-bold px-10 py-5 rounded-full text-lg tracking-wide transition-colors inline-block"
           >
-            GET A FREE ESTIMATE
+            Get a Free Estimate
           </Link>
         </div>
       </section>

@@ -14,7 +14,7 @@ export default function Seo({ path, jsonLd }) {
       <title>{page.title}</title>
       {page.description && <meta name="description" content={page.description} />}
       <meta name="robots" content={page.noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'} />
-      <link rel="canonical" href={url} />
+      {path !== '/404' && <link rel="canonical" href={url} />}
 
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content={SITE.name} />

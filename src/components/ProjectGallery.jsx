@@ -30,8 +30,11 @@ function GalleryItem({ photo, index, onClick }) {
     >
       <img
         src={photo.src}
+        srcSet={photo.srcSet}
+        sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
         alt={`${photo.label} by Prestigious Home Services`}
         loading="lazy"
+        decoding="async"
         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
       {/* Hover overlay */}
@@ -45,11 +48,22 @@ function GalleryItem({ photo, index, onClick }) {
 }
 
 function Lightbox({ photos, index, onClose, onPrev, onNext }) {
+  const dialogRef = useRef(null)
+  const closeRef = useRef(null)
+
   useEffect(() => {
     const handler = (e) => {
       if (e.key === 'Escape')     onClose()
       if (e.key === 'ArrowLeft')  onPrev()
       if (e.key === 'ArrowRight') onNext()
+      // Keep Tab inside the dialog.
+      if (e.key === 'Tab') {
+        const items = [...dialogRef.current.querySelectorAll('button')]
+        const i = items.indexOf(document.activeElement)
+        const next = e.shiftKey ? (i <= 0 ? items.length - 1 : i - 1) : (i + 1) % items.length
+        e.preventDefault()
+        items[next].focus()
+      }
     }
     window.addEventListener('keydown', handler)
     document.body.style.overflow = 'hidden'
@@ -59,15 +73,27 @@ function Lightbox({ photos, index, onClose, onPrev, onNext }) {
     }
   }, [onClose, onPrev, onNext])
 
+  // Move focus into the dialog, and back to the photo that opened it after.
+  useEffect(() => {
+    const opener = document.activeElement
+    closeRef.current?.focus()
+    return () => opener?.focus?.()
+  }, [])
+
   const photo = photos[index]
 
   return (
     <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Photo ${index + 1} of ${photos.length}: ${photo.label}`}
       className="fixed inset-0 bg-stone-950/95 z-50 flex items-center justify-center px-4"
       onClick={onClose}
     >
       {/* Close */}
       <button
+        ref={closeRef}
         onClick={onClose}
         className="absolute top-4 right-4 text-stone-400 hover:text-white text-3xl leading-none transition-colors z-10"
         aria-label="Close"
@@ -165,6 +191,8 @@ export default function ProjectGallery() {
             {categories.map(cat => (
               <button
                 key={cat}
+                type="button"
+                aria-pressed={activeFilter === cat}
                 onClick={() => setActiveFilter(cat)}
                 className={`whitespace-nowrap px-4 py-1.5 rounded text-sm font-bold tracking-wide transition-colors ${
                   activeFilter === cat

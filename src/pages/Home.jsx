@@ -5,7 +5,8 @@ import TrustStrip from '../components/TrustStrip'
 import ServiceCards from '../components/ServiceCards'
 import Reveal from '../components/Reveal'
 import { services } from '../data/services'
-import imgFloor from '../assets/floor.jpg'
+import imgFloor from '../assets/web/floor-1600.webp'
+import imgFloorSmall from '../assets/web/floor-800.webp'
 
 export default function Home() {
   return (
@@ -46,6 +47,8 @@ export default function Home() {
               <div className="absolute -inset-3 md:-inset-4 rounded-[1.75rem] border border-oak-300/50 translate-x-3 translate-y-3 md:translate-x-4 md:translate-y-4" aria-hidden="true" />
               <img
                 src={imgFloor}
+                srcSet={`${imgFloorSmall} 800w, ${imgFloor} 1536w`}
+                sizes="(min-width: 768px) 420px, 100vw"
                 alt="Flooring installation by Prestigious Home Services"
                 loading="lazy"
                 decoding="async"
@@ -102,7 +105,7 @@ export default function Home() {
       <ProjectGallery />
 
       {/* CTA */}
-      <section className="relative bg-red-600 py-20 md:py-24 text-center overflow-hidden">
+      <section className="relative bg-red-700 py-20 md:py-24 text-center overflow-hidden">
         <div
           className="absolute inset-0 opacity-30"
           style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.35), transparent 60%)' }}

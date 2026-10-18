@@ -62,8 +62,13 @@ export const PAGES = {
     noindex: true,
   },
   '/admin': {
-    title: `Gallery Admin | ${brand}`,
+    title: `Admin | ${brand}`,
     description: '',
+    noindex: true,
+  },
+  '/404': {
+    title: `Page Not Found | ${brand}`,
+    description: 'That page doesn’t exist. Find our services, project photos, room designer and free estimates at Prestigious Home Services.',
     noindex: true,
   },
 }

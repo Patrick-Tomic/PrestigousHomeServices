@@ -78,9 +78,11 @@ export default function Navbar() {
             }`}
           >
             <img
-              src="/logo.png"
+              src="/logo-nav.webp"
               alt=""
-              className="absolute inset-0 w-full h-full object-cover scale-[1.45] transition-transform duration-300 group-hover:scale-[1.55]"
+              width="48"
+              height="48"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.07]"
             />
           </span>
           <span className="leading-tight">
