@@ -1,5 +1,6 @@
 import { Component, Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { HOME_BASE, TERRITORY } from '../../data/areas'
 
 // three.js lives in its own chunk, fetched only after the page has painted.
 const HeroScene = lazy(() => import('./HeroScene'))
@@ -113,13 +114,13 @@ export default function Hero() {
           Licensed &bull; Insured &bull; Since 2011
         </p>
         <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-semibold text-white leading-[0.95] tracking-tight max-w-3xl mb-8 [text-shadow:0_2px_24px_rgba(0,0,0,0.45)]">
-          Prestigious<br />
-          <span className="text-red-500 italic">Home</span><br />
+          Prestigious<br />{' '}
+          <span className="text-red-500 italic">Home</span><br />{' '}
           Services.
         </h1>
         <p className="text-stone-200 text-lg md:text-xl max-w-lg leading-relaxed mb-10 [text-shadow:0_1px_12px_rgba(0,0,0,0.6)]">
-          Trusted flooring and home improvement contractor serving across the USA.
-          Built on craftsmanship, backed by over a decade of results.
+          Trusted flooring and home improvement contractor based in {HOME_BASE.label},
+          serving {TERRITORY}. Built on craftsmanship, backed by over a decade of results.
         </p>
         <div className="flex flex-wrap gap-4">
           <Link

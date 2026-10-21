@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import { postApi } from './api'
+import { builtinPhotos } from './builtinPhotos'
 
 // Built-in photos as responsive WebP (src/assets/web/, made from the
 // originals in src/assets/): 800px for phones and grids, 1600px for large
@@ -15,17 +16,7 @@ const pic = (name) => {
 }
 
 // Built-in photos. New ones are added by the owner at /admin.
-const builtInPhotos = [
-  { id: 1, ...pic('showerA'),  category: 'Bathroom', label: 'Custom Shower Tile' },
-  { id: 2, ...pic('floor'),    category: 'Flooring', label: 'Flooring Installation' },
-  { id: 3, ...pic('showerB'),  category: 'Bathroom', label: 'Shower Remodel' },
-  { id: 4, ...pic('hardwood'), category: 'Flooring', label: 'Hardwood Flooring' },
-  { id: 5, ...pic('showerC'),  category: 'Bathroom', label: 'Tile Work' },
-  { id: 6, ...pic('roofing'),  category: 'Roofing',  label: 'Roof Installation' },
-  { id: 7, ...pic('showerD'),  category: 'Bathroom', label: 'Master Shower' },
-  { id: 8, ...pic('bathroom'), category: 'Bathroom', label: 'Bathroom Remodel' },
-  { id: 9, ...pic('showerE'),  category: 'Bathroom', label: 'Walk-In Shower' },
-]
+const builtInPhotos = builtinPhotos.map(({ name, ...photo }) => ({ ...photo, ...pic(name) }))
 
 export const CATEGORIES = ['Flooring', 'Bathroom', 'Kitchen', 'Patio', 'Roofing', 'Handyman']
 

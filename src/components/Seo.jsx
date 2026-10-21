@@ -6,7 +6,7 @@ import { PAGES, SITE, absolute, breadcrumbs } from '../seo'
 export default function Seo({ path, jsonLd }) {
   const page = PAGES[path]
   const url = absolute(path)
-  const image = absolute(SITE.logo)
+  const image = absolute(SITE.shareImage)
   const crumbs = breadcrumbs(path)
 
   return (

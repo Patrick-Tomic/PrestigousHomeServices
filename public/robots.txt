@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /project
 Disallow: /api/
 
-Sitemap: https://prestigioushomeservices.com/sitemap.xml
+Sitemap: http://prestigoushomeservices.com/sitemap.xml

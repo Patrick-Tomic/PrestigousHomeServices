@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom'
+import { services } from '../data/services'
+import { HOME_BASE, TERRITORY } from '../data/areas'
 
 export default function Footer() {
   return (
@@ -11,11 +13,19 @@ export default function Footer() {
           <p className="text-sm">Licensed &amp; Insured.</p>
         </div>
 
+        <nav aria-label="Services" className="flex flex-col gap-1 text-sm">
+          <p className="text-white font-semibold mb-1">Services</p>
+          {services.map(s => (
+            <Link key={s.slug} to={`/services/${s.slug}`} className="hover:text-red-500 transition-colors">{s.title}</Link>
+          ))}
+        </nav>
+
         <div className="flex flex-col gap-1 text-sm">
           <p className="text-white font-semibold mb-1">Quick Links</p>
           <Link to="/" className="hover:text-red-500 transition-colors">Home</Link>
           <Link to="/work" className="hover:text-red-500 transition-colors">Our Work</Link>
           <Link to="/design" className="hover:text-red-500 transition-colors">Design Your Room</Link>
+          <Link to="/service-areas" className="hover:text-red-500 transition-colors">Service Areas</Link>
           <Link to="/contact" className="hover:text-red-500 transition-colors">Contact</Link>
         </div>
 
@@ -24,7 +34,8 @@ export default function Footer() {
           <a href="tel:+13862878579" className="hover:text-red-500 transition-colors block">
             (386) 287-8579
           </a>
-          <p className="mt-1">Serving Nationwide</p>
+          <p className="mt-1">Based in {HOME_BASE.label}</p>
+          <Link to="/service-areas" className="hover:text-red-500 transition-colors block">Serving {TERRITORY}</Link>
         </div>
       </div>
       <div className="border-t border-stone-800 text-center py-4 text-xs text-stone-400">

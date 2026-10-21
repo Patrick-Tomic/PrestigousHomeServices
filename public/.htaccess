@@ -5,22 +5,27 @@
 RewriteEngine On
 RewriteBase /
 
+# Pages like /service-areas sit beside a folder of the same name; don't let
+# Apache add a slash to them (the rules below handle slashes).
+DirectorySlash Off
+
 ErrorDocument 404 /404.html
 
-# Old links
+# Old links, and the services overview (it lives at /work)
 RewriteRule ^gallery/?$ /work [L,R=301]
+RewriteRule ^services/?$ /work [L,R=301]
 # (only when the visitor asked for the .html URL, not after our own rewrite)
-RewriteCond %{THE_REQUEST} \s/+(work|design|contact|project|admin)\.html[\s?]
+RewriteCond %{THE_REQUEST} \s/+(work|design|contact|project|admin|service-areas(?:/[a-z0-9-]+)?|services/[a-z0-9-]+)\.html[\s?]
 RewriteRule ^ /%1 [L,R=301]
 
 # Trailing slash -> no slash (canonical URLs have none)
-RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.+)/$ /$1 [L,R=301]
 
-# Prerendered pages (works whatever the host's document root is)
+# Prerendered pages, e.g. /work, /services/roofing, /service-areas/lake-city-fl
+# (works whatever the host's document root is)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME}.html -f
-RewriteRule ^([a-z0-9-]+)$ $1.html [L]
+RewriteRule ^([a-z0-9-]+(?:/[a-z0-9-]+)?)$ $1.html [L]
 
 # Compression for text files (skipped if the host lacks mod_deflate).
 <IfModule mod_deflate.c>

@@ -1,11 +1,14 @@
 // Services shown on the Home page (summary) and the Work page (full detail).
 // `category` matches the gallery categories in ./gallery.js so each service
 // shows its own photos. `estimate` preselects the service on the Contact
-// form; `designer` is the matching room type in the 3D room designer.
+// form; `designer` is the matching room type in the 3D room designer;
+// `seoTitle` / `seoDescription` are for the /services/<slug> page's search listing.
 
 export const services = [
   {
     slug: 'flooring',
+    seoTitle: 'Flooring Installation: Hardwood, Laminate, Tile & Stone',
+    seoDescription: 'Hardwood, laminate, tile and natural stone flooring installed in single rooms or whole homes. Licensed & insured since 2011. Free estimates.',
     estimate: 'Flooring Installation',
     designer: 'living',
     num: '01',
@@ -26,6 +29,8 @@ export const services = [
   },
   {
     slug: 'bathrooms',
+    seoTitle: 'Bathroom Remodels & Custom Tile Showers',
+    seoDescription: 'Bathroom remodels with custom tile and walk-in showers, floor and wall tile, vanities and fixtures. Licensed & insured since 2011. Free estimates.',
     estimate: 'Bathroom Remodel',
     designer: 'bathroom',
     num: '02',
@@ -46,6 +51,8 @@ export const services = [
   },
   {
     slug: 'kitchens',
+    seoTitle: 'Kitchen Updates: Cabinets, Flooring & Backsplashes',
+    seoDescription: 'Kitchen updates: cabinet installation, durable kitchen flooring and tile backsplashes. Clean finishes, on schedule. Licensed & insured. Free estimates.',
     estimate: 'Kitchen Updates',
     designer: 'kitchen',
     num: '03',
@@ -64,6 +71,8 @@ export const services = [
   },
   {
     slug: 'patios',
+    seoTitle: 'Enclosed Patios Built for the Southern Climate',
+    seoDescription: 'Custom enclosed patios built for the heat, humidity and storms of the South: comfortable, year-round living space. Licensed & insured. Free estimates.',
     estimate: 'Enclosed Patio',
     designer: 'patio',
     num: '04',
@@ -82,6 +91,8 @@ export const services = [
   },
   {
     slug: 'roofing',
+    seoTitle: 'Roofing: Assessments, Repairs & Replacement',
+    seoDescription: 'Roof assessments, repairs and full replacement, with an honest recommendation and a free estimate up front. Licensed & insured since 2011.',
     estimate: 'Roofing',
     num: '05',
     title: 'Roofing',
@@ -99,6 +110,8 @@ export const services = [
   },
   {
     slug: 'handyman',
+    seoTitle: 'Handyman Services: Repairs, Installs & Odd Jobs',
+    seoDescription: 'Handyman services for home repairs, fixture and hardware installs, odd jobs and punch lists. Licensed & insured since 2011. Free estimates.',
     estimate: 'Handyman Services',
     num: '06',
     title: 'Handyman Services',

@@ -13,6 +13,9 @@ const Contact = lazy(() => import('./pages/Contact'))
 const Design = lazy(() => import('./pages/Design'))
 const Project = lazy(() => import('./pages/Project'))
 const Admin = lazy(() => import('./pages/Admin'))
+const Service = lazy(() => import('./pages/Service'))
+const ServiceAreas = lazy(() => import('./pages/ServiceAreas').then(m => ({ default: m.ServiceAreas })))
+const ServiceArea = lazy(() => import('./pages/ServiceAreas').then(m => ({ default: m.ServiceArea })))
 
 function PageLoading() {
   return <div className="min-h-[60vh] bg-cream" aria-busy="true" aria-label="Loading page" />
@@ -42,6 +45,10 @@ export default function App() {
               <Route path="/" element={<Home />} />
               <Route path="/work" element={<Work />} />
               <Route path="/gallery" element={<Navigate to="/work" replace />} />
+              <Route path="/services" element={<Navigate to="/work" replace />} />
+              <Route path="/services/:slug" element={<Service />} />
+              <Route path="/service-areas" element={<ServiceAreas />} />
+              <Route path="/service-areas/:slug" element={<ServiceArea />} />
               <Route path="/design" element={<Design />} />
               <Route path="/project" element={<Project />} />
               <Route path="/contact" element={<Contact />} />

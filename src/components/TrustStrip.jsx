@@ -8,7 +8,7 @@ const stats = [
   { value: new Date().getFullYear() - FOUNDED, suffix: '+', label: 'Years in Business' },
   { value: 100, suffix: '%', label: 'Licensed & Insured' },
   { text: 'Free', label: 'Estimates' },
-  { text: 'USA', label: 'Nationwide Service' },
+  { text: 'FL · GA · TX', label: 'Service Area' },
 ]
 
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches

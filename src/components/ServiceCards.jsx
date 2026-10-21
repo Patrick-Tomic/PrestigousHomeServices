@@ -11,7 +11,7 @@ const iconPaths = {
   handyman: <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />,
 }
 
-function ServiceIcon({ slug }) {
+export function ServiceIcon({ slug }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6" aria-hidden="true">
       {iconPaths[slug]}
@@ -86,7 +86,7 @@ export default function ServiceCards({ services }) {
                   <span className="group-hover/link:translate-x-1 transition-transform inline-block">→</span>
                 </Link>
                 <Link
-                  to={`/work#${service.slug}`}
+                  to={`/services/${service.slug}`}
                   className="inline-flex items-center gap-1.5 text-stone-500 font-bold hover:text-red-600 transition-colors text-xs tracking-wider group/link"
                 >
                   SEE DETAILS &amp; PHOTOS

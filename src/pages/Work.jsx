@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { PhotoGrid } from '../components/ProjectGallery'
 import { useGalleryPhotos } from '../data/gallery'
 import { services } from '../data/services'
-import { SITE } from '../seo'
+import { AREA_SERVED, SITE } from '../seo'
 
 // Each service, tied to the business entity declared in index.html.
 const servicesLd = {
@@ -16,7 +16,7 @@ const servicesLd = {
     description: sv.body,
     url: `${SITE.url}/work#${sv.slug}`,
     provider: { '@id': `${SITE.url}/#business` },
-    areaServed: { '@type': 'Country', name: 'United States' },
+    areaServed: AREA_SERVED,
   })),
 }
 
@@ -82,8 +82,11 @@ function ServiceSection({ service, photos, shaded }) {
                 to={`/contact?service=${encodeURIComponent(service.estimate)}`}
                 className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-full text-sm tracking-wide transition-colors group"
               >
-                Get a free {service.title.toLowerCase()} estimate
+                Get a free estimate
                 <span className="group-hover:translate-x-1 transition-transform inline-block" aria-hidden="true">→</span>
+              </Link>
+              <Link to={`/services/${service.slug}`} className="text-sm font-semibold text-stone-700 hover:text-red-700 underline-offset-4 hover:underline">
+                More about {service.title.toLowerCase()} →
               </Link>
               {service.designer && (
                 <Link to={`/design?room=${service.designer}`} className="text-sm font-semibold text-stone-700 hover:text-red-700 underline-offset-4 hover:underline">

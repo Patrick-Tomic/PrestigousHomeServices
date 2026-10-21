@@ -3,6 +3,9 @@ import Seo from '../components/Seo'
 import EstimateForm from '../components/EstimateForm'
 import { SERVICE_OPTIONS } from '../data/inquiries'
 import { useProject } from '../components/designer/projectStore'
+import { faq } from '../data/faq'
+import { HOME_BASE, TERRITORY } from '../data/areas'
+import { services } from '../data/services'
 
 function InfoIcon({ children }) {
   return (
@@ -22,7 +25,7 @@ const details = [
   },
   {
     title: 'Service Area',
-    body: 'Serving Nationwide',
+    body: <p>Based in {HOME_BASE.label} · Serving {TERRITORY}. <Link to="/service-areas" className="font-semibold text-red-700 underline">See service areas</Link></p>,
     icon: <><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" /><circle cx="12" cy="10" r="2.5" /></>,
   },
   {
@@ -106,6 +109,34 @@ export default function Contact() {
             <h2 className="font-display text-2xl font-semibold text-stone-900 mb-1">Send Us a Message</h2>
             <p className="text-sm text-stone-600 mb-6">We’ll get back to you about your free estimate.</p>
             <EstimateForm kind="contact" defaultService={service} />
+          </div>
+        </div>
+      </section>
+
+      {/* Frequently asked questions */}
+      <section className="bg-white py-14 md:py-20" aria-labelledby="faq-title">
+        <div className="max-w-3xl mx-auto px-6">
+          <h2 id="faq-title" className="font-display text-3xl md:text-4xl font-semibold text-stone-900 mb-8">Frequently asked questions</h2>
+          <div className="divide-y divide-stone-200 border-y border-stone-200">
+            {faq.map(item => (
+              <details key={item.q} className="group py-5">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-stone-900 text-lg">
+                  {item.q}
+                  <span className="text-2xl font-light text-stone-400 transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+                </summary>
+                <p className="mt-3 text-stone-700 leading-relaxed">{item.a}</p>
+                {item.areas && (
+                  <Link to="/service-areas" className="mt-3 inline-block text-sm font-semibold text-red-700 hover:underline">See our service areas →</Link>
+                )}
+                {item.links && (
+                  <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                    {services.map(sv => (
+                      <li key={sv.slug}><Link to={`/services/${sv.slug}`} className="font-semibold text-red-700 hover:underline">{sv.title}</Link></li>
+                    ))}
+                  </ul>
+                )}
+              </details>
+            ))}
           </div>
         </div>
       </section>
